@@ -1,0 +1,47 @@
+---
+// The sky + cloud + rolling hills scene from the Canva mockups. Used as a
+// stand-in cover whenever a video/post has no uploaded media or poster yet.
+// A subtle hue shift makes a grid of them feel varied rather than identical.
+interface Props {
+  hue?: number; // 0–360, shifts the scene's tint a little
+  class?: string;
+}
+const { hue = 0, class: className } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 8);
+---
+
+<svg
+  class={className}
+  viewBox="0 0 300 420"
+  preserveAspectRatio="xMidYMid slice"
+  role="img"
+  aria-label="Placeholder scene"
+  style={`filter: hue-rotate(${hue}deg);`}
+>
+  <defs>
+    <linearGradient id={`sky-${uid}`} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bfe3f5" />
+      <stop offset="0.7" stop-color="#e8f4fb" />
+      <stop offset="1" stop-color="#f3fbf0" />
+    </linearGradient>
+  </defs>
+  <rect width="300" height="420" fill={`url(#sky-${uid})`} />
+  <!-- cloud -->
+  <g fill="#ffffff">
+    <ellipse cx="150" cy="120" rx="70" ry="42" />
+    <ellipse cx="110" cy="135" rx="42" ry="30" />
+    <ellipse cx="195" cy="135" rx="46" ry="30" />
+  </g>
+  <!-- hills -->
+  <path d="M0 320 Q90 280 160 315 T300 305 V420 H0 Z" fill="#a7d18a" />
+  <path d="M0 350 Q110 315 200 350 T300 345 V420 H0 Z" fill="#7cb342" />
+  <path d="M0 385 Q150 360 300 385 V420 H0 Z" fill="#5e9e2e" />
+</svg>
+
+<style>
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>

@@ -1,0 +1,101 @@
+---
+import type { Lang } from "../data/site";
+import { t } from "../data/ui";
+import { byLang, collectTags, cleanSlug } from "../lib/content";
+import PostCard from "../components/PostCard.astro";
+import FilterChips from "../components/FilterChips.astro";
+import { localizedPath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const strings = t(lang);
+const posts = await byLang("posts", lang);
+const tags = collectTags(posts);
+const base = import.meta.env.BASE_URL;
+---
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h1>{strings.postsTitle}</h1>
+      <span class="num">02</span>
+    </div>
+
+    {
+      posts.length === 0 ? (
+        <p class="empty">{strings.nothingHere}</p>
+      ) : (
+        <div class="posts-layout">
+          <div class="post-grid" id="post-grid">
+            {posts.map((post, i) => (
+              <a
+                class="post-tile"
+                href={localizedPath(base, lang, `posts/${cleanSlug(post.slug)}`)}
+                data-tags={post.data.tags.join(" ")}
+                data-astro-prefetch
+              >
+                <PostCard
+                  handle={post.data.handle}
+                  likes={post.data.likes}
+                  hue={(i * 53) % 360}
+                  media={post.data.media}
+                  variant="card"
+                />
+              </a>
+            ))}
+          </div>
+          <aside class="post-filter">
+            <FilterChips lang={lang} tags={tags} target="#post-grid .post-tile" />
+          </aside>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .posts-layout {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-12);
+    align-items: start;
+  }
+  .post-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+  .post-tile {
+    transition: transform var(--transition);
+  }
+  .post-tile:hover {
+    transform: translateY(-6px);
+  }
+  /* The filter chips on the right stack vertically (Canva page 4). */
+  .post-filter :global(.filter) {
+    flex-direction: column;
+    align-items: flex-start;
+    position: sticky;
+    top: 90px;
+  }
+
+  @media (max-width: 880px) {
+    .posts-layout {
+      grid-template-columns: 1fr;
+    }
+    .post-filter :global(.filter) {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: static;
+    }
+  }
+  @media (max-width: 560px) {
+    .post-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+    }
+  }
+</style>

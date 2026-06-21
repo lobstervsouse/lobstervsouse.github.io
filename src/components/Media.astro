@@ -1,0 +1,133 @@
+---
+// ─────────────────────────────────────────────────────────────────────────────
+// MEDIA RENDERER
+//
+// One component that knows how to display a piece of media regardless of where
+// it comes from:
+//   • type "upload"     → a <video> or <img> from a file you uploaded
+//   • type "youtube"    → a YouTube embed
+//   • type "tiktok"     → a TikTok embed
+//   • type "instagram"  → an Instagram embed
+//
+// This is what makes the "social auto-pull later" plan drop in cleanly: a sync
+// script would just create content entries with type/url and this renders them.
+//
+// `kind` hints whether an upload should be shown as a video or an image.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface MediaData {
+  type?: "upload" | "youtube" | "tiktok" | "instagram";
+  src?: string;
+  url?: string;
+  embedId?: string;
+  poster?: string;
+  alt?: string;
+}
+
+interface Props {
+  media: MediaData;
+  kind?: "video" | "image";
+  /** autoplay/controls behaviour for uploaded videos */
+  controls?: boolean;
+  class?: string;
+}
+
+const { media, kind = "video", controls = true, class: className } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+// Prefix uploaded asset paths with the deployment base so they work in a
+// sub-folder deployment too. Leave full URLs untouched.
+function asset(path?: string) {
+  if (!path) return undefined;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${base}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
+const type = media.type ?? "upload";
+
+// Helper to pull a YouTube id from either a bare id or a full URL.
+function youtubeId(): string | undefined {
+  if (media.embedId) return media.embedId;
+  if (!media.url) return undefined;
+  const m = media.url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{6,})/);
+  return m?.[1];
+}
+const ytId = type === "youtube" ? youtubeId() : undefined;
+---
+
+{
+  type === "upload" && kind === "video" && media.src && (
+    <video
+      class={className}
+      src={asset(media.src)}
+      poster={asset(media.poster)}
+      controls={controls}
+      playsinline
+      preload="metadata"
+      aria-label={media.alt}
+    />
+  )
+}
+
+{
+  type === "upload" && kind === "image" && (
+    <img
+      class={className}
+      src={asset(media.src ?? media.poster)}
+      alt={media.alt ?? ""}
+      loading="lazy"
+      decoding="async"
+    />
+  )
+}
+
+{
+  type === "youtube" && ytId && (
+    <iframe
+      class={className}
+      src={`https://www.youtube-nocookie.com/embed/${ytId}`}
+      title={media.alt || "YouTube video"}
+      loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    />
+  )
+}
+
+{
+  type === "tiktok" && media.url && (
+    <blockquote
+      class:list={["tiktok-embed", className]}
+      cite={media.url}
+      data-video-id={media.embedId}
+    >
+      <a href={media.url} target="_blank" rel="noopener noreferrer">
+        {media.alt || "View on TikTok"}
+      </a>
+    </blockquote>
+  )
+}
+
+{
+  type === "instagram" && media.url && (
+    <blockquote
+      class:list={["instagram-media", className]}
+      data-instgrm-permalink={media.url}
+    >
+      <a href={media.url} target="_blank" rel="noopener noreferrer">
+        {media.alt || "View on Instagram"}
+      </a>
+    </blockquote>
+  )
+}
+
+<style>
+  video,
+  img,
+  iframe {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 0;
+  }
+</style>

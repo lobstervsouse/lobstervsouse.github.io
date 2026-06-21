@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" width="360" height="640" role="img" aria-label="Intro video placeholder">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232323"/>
+      <stop offset="1" stop-color="#141414"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="640" fill="url(#g)"/>
+  <circle cx="180" cy="300" r="56" fill="none" stroke="#e8a0b4" stroke-width="3"/>
+  <path d="M165 275 v50 l42 -25 z" fill="#e8a0b4"/>
+  <text x="180" y="400" text-anchor="middle" fill="#a8a39b" font-family="Inter, sans-serif" font-size="20">Intro video</text>
+  <text x="180" y="428" text-anchor="middle" fill="#6a655d" font-family="Inter, sans-serif" font-size="14">replace /public/media/intro.mp4</text>
+</svg>

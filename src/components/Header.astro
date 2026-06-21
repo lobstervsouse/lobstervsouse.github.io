@@ -1,0 +1,163 @@
+---
+import { site } from "../data/site";
+import { t } from "../data/ui";
+import type { Lang } from "../data/site";
+import { localizedPath, switchLangPath, otherLang } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const strings = t(lang);
+const base = import.meta.env.BASE_URL;
+const homeHref = localizedPath(base, lang, "");
+const langHref = switchLangPath(Astro.url, base, lang);
+const other = otherLang(lang).toUpperCase();
+---
+
+<header class="site-header">
+  <a href={homeHref} class="logo" data-astro-prefetch>{site.name}</a>
+
+  <div class="header-tools">
+    <!-- Language toggle -->
+    <a
+      href={langHref}
+      class="tool lang-toggle"
+      aria-label={strings.toggleLang}
+      title={strings.toggleLang}
+    >
+      <span class="lang-current">{lang.toUpperCase()}</span>
+      <span class="lang-sep">/</span>
+      <span class="lang-other">{other}</span>
+    </a>
+
+    <!-- Day / Night toggle -->
+    <button
+      id="theme-toggle"
+      class="tool theme-toggle"
+      type="button"
+      aria-label={strings.toggleTheme}
+      title={strings.toggleTheme}
+    >
+      <!-- sun -->
+      <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+        <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="12" y1="2" x2="12" y2="4"></line>
+          <line x1="12" y1="20" x2="12" y2="22"></line>
+          <line x1="2" y1="12" x2="4" y2="12"></line>
+          <line x1="20" y1="12" x2="22" y2="12"></line>
+          <line x1="4.9" y1="4.9" x2="6.3" y2="6.3"></line>
+          <line x1="17.7" y1="17.7" x2="19.1" y2="19.1"></line>
+          <line x1="4.9" y1="19.1" x2="6.3" y2="17.7"></line>
+          <line x1="17.7" y1="6.3" x2="19.1" y2="4.9"></line>
+        </g>
+      </svg>
+      <!-- moon -->
+      <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path
+          d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"
+          fill="currentColor"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<script>
+  // Toggle + persist theme. Re-bound after each View Transition swap.
+  function bindThemeToggle() {
+    const btn = document.getElementById("theme-toggle");
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = "true";
+    btn.addEventListener("click", () => {
+      const root = document.documentElement;
+      const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem("theme", next);
+      } catch (e) {}
+    });
+  }
+  bindThemeToggle();
+  document.addEventListener("astro:after-swap", bindThemeToggle);
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    backdrop-filter: blur(10px);
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transition), background var(--transition);
+  }
+  .site-header:hover {
+    border-bottom-color: var(--line);
+  }
+
+  .logo {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    letter-spacing: 0.18em;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-transform: lowercase;
+  }
+  .logo::first-letter {
+    /* keeps small-caps consistent across browsers */
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .tool {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    color: var(--text);
+    transition: transform var(--transition), border-color var(--transition),
+      color var(--transition);
+  }
+  .tool:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+
+  .lang-toggle {
+    padding-inline: 0.9em;
+    gap: 0.25em;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .lang-current {
+    color: var(--accent);
+  }
+  .lang-sep,
+  .lang-other {
+    color: var(--text-muted);
+  }
+
+  .theme-toggle {
+    width: 40px;
+  }
+  /* Show only the icon for the mode you'd switch TO. */
+  :global(:root[data-theme="dark"]) .theme-toggle .icon-moon {
+    display: none;
+  }
+  :global(:root[data-theme="light"]) .theme-toggle .icon-sun {
+    display: none;
+  }
+</style>

@@ -1,0 +1,25 @@
+---
+// Sets the theme BEFORE the page paints, so there's no flash of the wrong
+// colour. Reads a saved choice from localStorage, otherwise follows the OS
+// preference. Re-runs after Astro View Transitions swaps the page.
+---
+
+<script is:inline>
+  (function () {
+    function applyTheme() {
+      try {
+        var saved = localStorage.getItem("theme");
+        var prefersDark =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = saved || (prefersDark ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    }
+    applyTheme();
+    // Astro fires this after a View Transition navigation.
+    document.addEventListener("astro:after-swap", applyTheme);
+  })();
+</script>

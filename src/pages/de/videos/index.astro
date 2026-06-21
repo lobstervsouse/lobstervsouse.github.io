@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import VideosSection from "../../../sections/VideosSection.astro";
+import BackHome from "../../../components/BackHome.astro";
+import { t } from "../../../data/ui";
+const lang = "de" as const;
+---
+
+<BaseLayout lang={lang} title={t(lang).videosTitle}>
+  <VideosSection lang={lang} />
+  <BackHome lang={lang} />
+</BaseLayout>

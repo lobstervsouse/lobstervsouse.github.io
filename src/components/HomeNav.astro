@@ -1,0 +1,135 @@
+---
+// The numbered vertical nav from the home hub (page 1). Mixes the geometric
+// sans and the serif-italic exactly like the Canva design: Videos & Texts &
+// Achievements in sans; Posts, Other projects, Contact me! in serif-italic.
+import { t } from "../data/ui";
+import type { Lang } from "../data/site";
+import { localizedPath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const strings = t(lang);
+const base = import.meta.env.BASE_URL;
+
+const items = [
+  { num: "01", label: strings.nav.videos, path: "videos", style: "sans" },
+  { num: "02", label: strings.nav.posts, path: "posts", style: "serif" },
+  { num: "03", label: strings.nav.texts, path: "texts", style: "sans" },
+  { num: "04", label: strings.nav.projects, path: "projects", style: "serif" },
+  { num: "05", label: strings.nav.achievements, path: "achievements", style: "sans" },
+  { num: "06", label: strings.nav.contact, path: "contact", style: "serif", cta: true },
+] as const;
+---
+
+<nav class="home-nav" aria-label="Main">
+  <ul>
+    {
+      items.map((item, i) => (
+        <li style={`--i:${i}`}>
+          <a
+            href={localizedPath(base, lang, item.path)}
+            class:list={["nav-link", item.style, { cta: item.cta }]}
+            data-astro-prefetch
+          >
+            <span class:list={["label", item.style === "serif" && "serif-italic"]}>
+              {item.label}
+            </span>
+            <sup class="num">{item.num}</sup>
+            {item.cta && (
+              <span class="cta-dot" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            )}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .home-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  li {
+    opacity: 0;
+    transform: translateX(12px);
+    animation: navIn 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(var(--i) * 80ms + 150ms);
+  }
+  @keyframes navIn {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    li {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: 0.15em 0;
+    color: var(--text);
+    transition: color var(--transition), transform var(--transition);
+    position: relative;
+  }
+  .label {
+    font-size: clamp(1.8rem, 4.2vw, 2.9rem);
+    line-height: 1.15;
+    transition: letter-spacing var(--transition);
+  }
+  .nav-link.sans .label {
+    font-family: var(--font-sans);
+    font-weight: 500;
+  }
+  .nav-link .num {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    transition: color var(--transition);
+  }
+  .nav-link:hover {
+    color: var(--accent);
+    transform: translateX(6px);
+  }
+  .nav-link:hover .num {
+    color: var(--accent);
+  }
+
+  /* Contact = call-to-action with an arrow chip */
+  .nav-link.cta .label {
+    color: var(--accent);
+  }
+  .cta-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-left: var(--space-2);
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    align-self: center;
+    transition: transform var(--transition);
+  }
+  .nav-link.cta:hover .cta-dot {
+    transform: translateX(4px);
+  }
+</style>

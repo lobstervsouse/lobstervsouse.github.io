@@ -1,0 +1,216 @@
+---
+// Video carousel (Canva page 2): three phones visible, the centre one enlarged,
+// left/right arrows, keyboard + swipe support. Each slide links to its detail
+// page. Filtering by hashtag re-flows the visible set.
+import PhoneMockup from "./PhoneMockup.astro";
+import { t } from "../data/ui";
+import type { Lang } from "../data/site";
+import { localizedPath } from "../i18n/utils";
+import { cleanSlug } from "../lib/content";
+
+interface VideoItem {
+  slug: string;
+  data: {
+    title: string;
+    description?: string;
+    tags: string[];
+    views?: string;
+    media: any;
+  };
+}
+
+interface Props {
+  lang: Lang;
+  videos: VideoItem[];
+}
+const { lang, videos } = Astro.props;
+const strings = t(lang);
+const base = import.meta.env.BASE_URL;
+---
+
+<div class="carousel" id="video-carousel">
+  <button class="arrow prev" type="button" aria-label={strings.previous}>
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M15 6l-6 6 6 6" />
+    </svg>
+  </button>
+
+  <div class="track" role="list">
+    {
+      videos.map((v, i) => (
+        <a
+          class="slide"
+          role="listitem"
+          href={localizedPath(base, lang, `videos/${cleanSlug(v.slug)}`)}
+          data-index={i}
+          data-tags={v.data.tags.join(" ")}
+          data-astro-prefetch
+        >
+          <PhoneMockup media={v.data.media} hue={(i * 47) % 360} class="slide-phone" />
+          <div class="slide-meta">
+            <h3>{v.data.title}</h3>
+            {v.data.views && <span class="views">{v.data.views}</span>}
+          </div>
+        </a>
+      ))
+    }
+  </div>
+
+  <button class="arrow next" type="button" aria-label={strings.next}>
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  </button>
+</div>
+
+<script>
+  function setupCarousel() {
+    const root = document.getElementById("video-carousel");
+    if (!root || (root as HTMLElement).dataset.bound) return;
+    (root as HTMLElement).dataset.bound = "true";
+
+    const track = root.querySelector<HTMLElement>(".track")!;
+    const prev = root.querySelector<HTMLButtonElement>(".prev")!;
+    const next = root.querySelector<HTMLButtonElement>(".next")!;
+
+    function visibleSlides() {
+      return Array.from(track.querySelectorAll<HTMLElement>(".slide")).filter(
+        (s) => s.style.display !== "none",
+      );
+    }
+    let active = 0;
+
+    function render() {
+      const slides = visibleSlides();
+      if (slides.length === 0) return;
+      active = Math.max(0, Math.min(active, slides.length - 1));
+      slides.forEach((s, i) => {
+        s.classList.toggle("is-active", i === active);
+        // distance from active controls scale/opacity via a CSS var
+        s.style.setProperty("--dist", String(Math.abs(i - active)));
+        s.style.order = String(i);
+      });
+      const activeEl = slides[active];
+      activeEl?.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
+
+    function go(delta: number) {
+      const slides = visibleSlides();
+      active = (active + delta + slides.length) % slides.length;
+      render();
+    }
+
+    prev.addEventListener("click", () => go(-1));
+    next.addEventListener("click", () => go(1));
+
+    root.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        go(-1);
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        go(1);
+      }
+    });
+
+    // Re-centre when the filter changes the visible set.
+    const observer = new MutationObserver(() => {
+      active = 0;
+      render();
+    });
+    track.querySelectorAll(".slide").forEach((s) =>
+      observer.observe(s, { attributes: true, attributeFilter: ["style"] }),
+    );
+
+    render();
+  }
+  setupCarousel();
+  document.addEventListener("astro:after-swap", setupCarousel);
+</script>
+
+<style>
+  .carousel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    justify-content: center;
+  }
+  .track {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-block: var(--space-6);
+    padding-inline: var(--space-6);
+    flex: 1;
+    justify-content: center;
+    scrollbar-width: none;
+  }
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide {
+    flex: 0 0 auto;
+    width: clamp(170px, 22vw, 230px);
+    scroll-snap-align: center;
+    text-align: center;
+    transition: transform var(--transition), opacity var(--transition);
+    /* phones further from centre shrink + dim */
+    transform: scale(calc(1 - var(--dist, 1) * 0.12));
+    opacity: calc(1 - var(--dist, 1) * 0.35);
+  }
+  .slide.is-active {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  .slide:hover {
+    opacity: 1;
+  }
+  .slide-meta {
+    margin-top: var(--space-4);
+  }
+  .slide-meta h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .views {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .arrow {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    transition: all var(--transition);
+  }
+  .arrow:hover {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 640px) {
+    .slide {
+      width: 62vw;
+    }
+    .arrow {
+      width: 46px;
+      height: 46px;
+    }
+  }
+</style>

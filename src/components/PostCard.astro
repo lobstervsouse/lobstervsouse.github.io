@@ -1,0 +1,184 @@
+---
+// Instagram-style post card (matches Canva pages 4 & 5). Header row with avatar
+// + handle, the image, the like/comment/share/save action row, then caption.
+import Media from "./Media.astro";
+import PlaceholderScene from "./PlaceholderScene.astro";
+
+interface Props {
+  handle?: string;
+  caption?: string;
+  likes?: string;
+  hue?: number;
+  media?: {
+    type?: "upload" | "youtube" | "tiktok" | "instagram";
+    src?: string;
+    url?: string;
+    poster?: string;
+    alt?: string;
+  };
+  /** detail = larger, shows full caption; card = grid tile */
+  variant?: "card" | "detail";
+  class?: string;
+}
+const {
+  handle = "@daria.radiuk",
+  caption,
+  likes,
+  hue = 0,
+  media,
+  variant = "card",
+  class: className,
+} = Astro.props;
+const hasMedia = media && (media.src || media.url || media.poster);
+---
+
+<article class:list={["post", variant, className]}>
+  <header class="post-head">
+    <span class="ig-avatar" aria-hidden="true"></span>
+    <span class="ig-handle">{handle}</span>
+    <span class="ig-more" aria-hidden="true">•••</span>
+  </header>
+
+  <div class="post-image">
+    {
+      hasMedia ? (
+        <Media media={media!} kind="image" />
+      ) : (
+        <PlaceholderScene hue={hue} />
+      )
+    }
+  </div>
+
+  <div class="post-actions" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M12 21s-7-4.5-9.5-9C.8 8.5 2.5 5 6 5c2 0 3.2 1.2 4 2.3C10.8 6.2 12 5 14 5c3.5 0 5.2 3.5 3.5 7-2.5 4.5-9.5 9-5.5 9z" />
+    </svg>
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M21 11.5a8.5 8.5 0 0 1-12 7.7L3 21l1.8-6A8.5 8.5 0 1 1 21 11.5z" />
+    </svg>
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M22 3 11 14M22 3l-7 18-4-7-7-4 18-7z" />
+    </svg>
+    <span class="spacer"></span>
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M6 3h12v18l-6-4-6 4V3z" />
+    </svg>
+  </div>
+
+  {
+    variant === "detail" ? (
+      <div class="post-caption">
+        {likes && <p class="post-likes">{likes}</p>}
+        {caption && (
+          <p>
+            <strong>{handle}</strong> {caption}
+          </p>
+        )}
+      </div>
+    ) : (
+      <div class="post-meta" aria-hidden="true">
+        <span class="meta-bar a" />
+        <span class="meta-bar b" />
+        <span class="meta-bar c" />
+      </div>
+    )
+  }
+</article>
+
+<style>
+  .post {
+    background: #ffffff;
+    color: #1a1a1a;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+  .post-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .ig-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #4aa3ff;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #f58529;
+    flex: 0 0 auto;
+  }
+  .ig-handle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .ig-more {
+    margin-left: auto;
+    color: #888;
+    letter-spacing: 1px;
+  }
+  .post-image {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background: #dceaf5;
+  }
+  .post-image :global(svg),
+  .post-image :global(img),
+  .post-image :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .post-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    color: #262626;
+  }
+  .post-actions .spacer {
+    flex: 1;
+  }
+  .post-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 0 12px 14px;
+  }
+  .meta-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #d9d9d9;
+  }
+  .meta-bar.a {
+    width: 35%;
+    background: #4aa3ff;
+  }
+  .meta-bar.b {
+    width: 80%;
+  }
+  .meta-bar.c {
+    width: 55%;
+  }
+  .post-caption {
+    padding: 0 14px 16px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .post-likes {
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  .post-caption p {
+    margin: 0 0 6px;
+  }
+  /* detail variant is wider/centered */
+  .post.detail {
+    max-width: 440px;
+    margin-inline: auto;
+  }
+</style>

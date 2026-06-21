@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Auto-deploy to GitHub Pages.
+#
+# Every time you push to the `main` branch (including uploading a new content
+# file through the GitHub website), this builds the site and publishes it.
+# You do NOT need to run anything yourself.
+#
+# ONE-TIME SETUP on GitHub:
+#   1. Push this project to a GitHub repository.
+#   2. Repo → Settings → Pages → "Build and deployment" → Source: GitHub Actions.
+#   3. Make sure astro.config.mjs has the right `site` and `base` (see README).
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Lets you trigger a deploy by hand from the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy at a time; newer pushes cancel older in-progress runs.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with Astro
+        uses: withastro/action@v3
+        # withastro/action installs deps, runs `astro build`, and uploads the
+        # site automatically. It reads `site`/`base` from astro.config.mjs.
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ContactSection from "../../../sections/ContactSection.astro";
+import BackHome from "../../../components/BackHome.astro";
+import { t } from "../../../data/ui";
+const lang = "de" as const;
+---
+
+<BaseLayout lang={lang} title={t(lang).contactTitle}>
+  <ContactSection lang={lang} />
+  <BackHome lang={lang} />
+</BaseLayout>

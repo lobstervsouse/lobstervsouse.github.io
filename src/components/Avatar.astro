@@ -1,0 +1,77 @@
+---
+// Placeholder illustrated avatar of Daria: dark hair, pink turtleneck, smiling.
+// This is a lightweight inline SVG so there's no image to load. To use a real
+// illustration later, replace this whole component with an <img> or <Image>.
+interface Props {
+  size?: number;
+  class?: string;
+}
+const { size = 280, class: className } = Astro.props;
+---
+
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 280 300"
+  role="img"
+  aria-label="Illustrated portrait of Daria Radiuk"
+  transition:name="avatar"
+>
+  <defs>
+    <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b2b2f" />
+      <stop offset="1" stop-color="#161618" />
+    </linearGradient>
+    <linearGradient id="sweaterGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0a9bd" />
+      <stop offset="1" stop-color="#e2849c" />
+    </linearGradient>
+    <radialGradient id="cheek" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f4b8c4" stop-opacity="0.9" />
+      <stop offset="1" stop-color="#f4b8c4" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- back hair -->
+  <path
+    d="M55 150 C45 70 95 30 140 30 C185 30 235 70 225 150 C232 210 225 270 225 300 L55 300 C55 270 48 210 55 150 Z"
+    fill="url(#hairGrad)"
+  />
+
+  <!-- neck -->
+  <rect x="120" y="170" width="40" height="55" rx="18" fill="#f2cda8" />
+
+  <!-- sweater (pink turtleneck) -->
+  <path
+    d="M70 300 C70 250 95 220 140 220 C185 220 210 250 210 300 Z"
+    fill="url(#sweaterGrad)"
+  />
+  <rect x="113" y="196" width="54" height="34" rx="16" fill="url(#sweaterGrad)" />
+  <rect x="115" y="190" width="50" height="22" rx="11" fill="#f6b7c8" />
+
+  <!-- face -->
+  <ellipse cx="140" cy="130" rx="62" ry="68" fill="#f7d4ad" />
+
+  <!-- front hair / fringe -->
+  <path
+    d="M78 130 C70 70 110 40 140 40 C170 40 210 70 202 130 C198 96 175 84 175 84 C170 104 150 108 140 108 C130 108 110 104 105 84 C105 84 82 96 78 130 Z"
+    fill="url(#hairGrad)"
+  />
+  <path d="M70 132 C66 96 78 78 96 70 C84 96 84 140 88 176 C70 168 72 150 70 132 Z" fill="url(#hairGrad)" />
+  <path d="M210 132 C214 96 202 78 184 70 C196 96 196 140 192 176 C210 168 208 150 210 132 Z" fill="url(#hairGrad)" />
+
+  <!-- cheeks -->
+  <circle cx="108" cy="150" r="16" fill="url(#cheek)" />
+  <circle cx="172" cy="150" r="16" fill="url(#cheek)" />
+
+  <!-- eyes (happy / smiling) -->
+  <path d="M104 132 Q114 122 124 132" stroke="#2b2b2f" stroke-width="4" fill="none" stroke-linecap="round" />
+  <path d="M156 132 Q166 122 176 132" stroke="#2b2b2f" stroke-width="4" fill="none" stroke-linecap="round" />
+
+  <!-- smile -->
+  <path d="M118 158 Q140 178 162 158" stroke="#c96a78" stroke-width="4" fill="none" stroke-linecap="round" />
+
+  <!-- nose -->
+  <path d="M140 140 l-4 12 h8 Z" fill="#eab98f" />
+</svg>

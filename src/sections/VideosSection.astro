@@ -1,0 +1,43 @@
+---
+import type { Lang } from "../data/site";
+import { t } from "../data/ui";
+import { byLang, collectTags } from "../lib/content";
+import VideoCarousel from "../components/VideoCarousel.astro";
+import FilterChips from "../components/FilterChips.astro";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const strings = t(lang);
+const videos = await byLang("videos", lang);
+const tags = collectTags(videos);
+---
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h1>{strings.videosTitle}</h1>
+      <span class="num">01</span>
+    </div>
+
+    {
+      videos.length === 0 ? (
+        <p class="empty">{strings.nothingHere}</p>
+      ) : (
+        <>
+          <VideoCarousel lang={lang} videos={videos} />
+          <div class="filter-wrap">
+            <FilterChips lang={lang} tags={tags} target="#video-carousel .slide" />
+          </div>
+        </>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .filter-wrap {
+    margin-top: var(--space-8);
+  }
+</style>

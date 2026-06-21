@@ -1,0 +1,157 @@
+---
+// Contact form wired to Formspree (free, works on static hosting). While the id
+// is still the placeholder, the form shows a friendly note and falls back to
+// the email link. Submits via fetch so the visitor stays on the page.
+import { site } from "../data/site";
+import { t } from "../data/ui";
+import type { Lang } from "../data/site";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const strings = t(lang);
+const configured = site.formspreeId && site.formspreeId !== "YOUR_FORMSPREE_ID";
+const action = `https://formspree.io/f/${site.formspreeId}`;
+---
+
+<form
+  class="contact-form"
+  id="contact-form"
+  action={action}
+  method="POST"
+  data-configured={configured ? "true" : "false"}
+>
+  <label>
+    <span>{strings.formName}</span>
+    <input type="text" name="name" required autocomplete="name" />
+  </label>
+  <label>
+    <span>{strings.formEmail}</span>
+    <input type="email" name="email" required autocomplete="email" />
+  </label>
+  <label>
+    <span>{strings.formMessage}</span>
+    <textarea name="message" rows="5" required></textarea>
+  </label>
+  <!-- simple spam honeypot (hidden from people, bots fill it in) -->
+  <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="gotcha" aria-hidden="true" />
+
+  <button type="submit" class="btn btn-accent" id="contact-submit">
+    {strings.formSend}
+  </button>
+
+  <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+</form>
+
+<script
+  define:vars={{
+    sending: strings.formSending,
+    success: strings.formSuccess,
+    error: strings.formError,
+    send: strings.formSend,
+    email: site.email,
+  }}
+>
+  function bindContact() {
+    const form = document.getElementById("contact-form");
+    if (!form || form.dataset.bound) return;
+    form.dataset.bound = "true";
+    const status = document.getElementById("form-status");
+    const submit = document.getElementById("contact-submit");
+    const configured = form.getAttribute("data-configured") === "true";
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!configured) {
+        // Not set up yet → guide the owner/visitor to email instead.
+        status.textContent = error + " (" + email + ")";
+        status.className = "form-status err";
+        window.location.href = "mailto:" + email;
+        return;
+      }
+
+      submit.disabled = true;
+      const original = submit.textContent;
+      submit.textContent = sending;
+      status.textContent = "";
+      status.className = "form-status";
+
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+        if (res.ok) {
+          form.reset();
+          status.textContent = success;
+          status.className = "form-status ok";
+        } else {
+          throw new Error("bad response");
+        }
+      } catch (err) {
+        status.textContent = error + " (" + email + ")";
+        status.className = "form-status err";
+      } finally {
+        submit.disabled = false;
+        submit.textContent = original;
+      }
+    });
+  }
+  bindContact();
+  document.addEventListener("astro:after-swap", bindContact);
+</script>
+
+<style>
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: min(520px, 100%);
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+  input,
+  textarea {
+    font: inherit;
+    color: var(--text);
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.8em 1em;
+    transition: border-color var(--transition);
+    resize: vertical;
+  }
+  input:focus,
+  textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+  .gotcha {
+    position: absolute;
+    left: -9999px;
+    height: 0;
+    overflow: hidden;
+  }
+  .btn-accent {
+    align-self: flex-start;
+  }
+  .form-status {
+    margin: 0;
+    font-size: 0.95rem;
+    min-height: 1.2em;
+  }
+  .form-status.ok {
+    color: #4caf72;
+  }
+  .form-status.err {
+    color: var(--accent-strong);
+  }
+</style>

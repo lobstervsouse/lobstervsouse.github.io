@@ -1,0 +1,63 @@
+---
+// Hashtag filter chips (e.g. #educational #growth #viral). Clicking a chip
+// shows/hides items via a small client script — works on the static site with
+// no page reload. Items to filter must carry `data-tags="tag1 tag2"`.
+import { t } from "../data/ui";
+import type { Lang } from "../data/site";
+
+interface Props {
+  lang: Lang;
+  tags: string[];
+  /** CSS selector for the items this filter controls */
+  target: string;
+}
+const { lang, tags, target } = Astro.props;
+const strings = t(lang);
+const unique = [...new Set(tags)];
+---
+
+<div class="filter" data-target={target} role="group" aria-label={strings.filterBy}>
+  <button class="chip" type="button" data-tag="*" aria-pressed="true">
+    {strings.allTopics}
+  </button>
+  {
+    unique.map((tag) => (
+      <button class="chip" type="button" data-tag={tag} aria-pressed="false">
+        <span class="hash">#</span>
+        {tag}
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  function bindFilter(root: HTMLElement) {
+    if (root.dataset.bound) return;
+    root.dataset.bound = "true";
+    const target = root.getAttribute("data-target")!;
+    const chips = Array.from(root.querySelectorAll<HTMLButtonElement>(".chip"));
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const tag = chip.getAttribute("data-tag")!;
+        chips.forEach((c) =>
+          c.setAttribute("aria-pressed", String(c === chip)),
+        );
+        const items = document.querySelectorAll<HTMLElement>(target);
+        items.forEach((item) => {
+          const itemTags = (item.getAttribute("data-tags") || "").split(/\s+/);
+          const show = tag === "*" || itemTags.includes(tag);
+          item.style.display = show ? "" : "none";
+        });
+      });
+    });
+  }
+
+  function init() {
+    document
+      .querySelectorAll<HTMLElement>(".filter")
+      .forEach((el) => bindFilter(el));
+  }
+  init();
+  document.addEventListener("astro:after-swap", init);
+</script>

@@ -1,0 +1,114 @@
+---
+import { profile } from "../data/site";
+import type { Lang } from "../data/site";
+import Avatar from "../components/Avatar.astro";
+import HomeNav from "../components/HomeNav.astro";
+import IntroOverlay from "../components/IntroOverlay.astro";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const p = profile[lang];
+---
+
+<IntroOverlay lang={lang} />
+
+<section class="home">
+  <div class="container home-grid">
+    <header class="hero-head">
+      <h1>
+        <span class="lead">{p.heroLead}</span>
+        <span class="for">— {p.heroFor}</span>
+      </h1>
+    </header>
+
+    <div class="home-avatar">
+      <Avatar size={300} />
+    </div>
+
+    <div class="home-menu">
+      <HomeNav lang={lang} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .home {
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-16);
+  }
+  .home-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.85fr) minmax(280px, 1fr);
+    grid-template-areas:
+      "head head"
+      "avatar menu";
+    gap: var(--space-12) var(--space-16);
+    align-items: center;
+  }
+  .hero-head {
+    grid-area: head;
+    margin-bottom: var(--space-4);
+  }
+  .hero-head h1 {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: clamp(1.8rem, 4.5vw, 3.4rem);
+    line-height: 1.12;
+  }
+  .hero-head .for {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.5em;
+    letter-spacing: 0.12em;
+    margin-top: 0.5em;
+    text-transform: none;
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+
+  .home-avatar {
+    grid-area: avatar;
+    display: flex;
+    justify-content: center;
+  }
+  .home-avatar :global(svg) {
+    width: min(300px, 70vw);
+    height: auto;
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.35));
+    animation: floatIn 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes floatIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.96);
+    }
+  }
+
+  .home-menu {
+    grid-area: menu;
+  }
+
+  @media (max-width: 760px) {
+    .home-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "head"
+        "avatar"
+        "menu";
+      text-align: center;
+      gap: var(--space-8);
+    }
+    .home-menu :global(.home-nav ul) {
+      align-items: center;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .home-avatar :global(svg) {
+      animation: none;
+    }
+  }
+</style>

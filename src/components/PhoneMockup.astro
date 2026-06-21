@@ -1,0 +1,144 @@
+---
+// A vertical phone / Reel frame (matches the Canva video mockups). Shows either
+// real media or the placeholder scene, wrapped in a phone shell with the little
+// UI dots and side action icons.
+import Media from "./Media.astro";
+import PlaceholderScene from "./PlaceholderScene.astro";
+
+interface Props {
+  media?: {
+    type?: "upload" | "youtube" | "tiktok" | "instagram";
+    src?: string;
+    url?: string;
+    embedId?: string;
+    poster?: string;
+    alt?: string;
+  };
+  hue?: number;
+  controls?: boolean;
+  class?: string;
+}
+const { media, hue = 0, controls = false, class: className } = Astro.props;
+const hasMedia = media && (media.src || media.url || media.poster);
+---
+
+<div class:list={["phone", className]}>
+  <div class="phone-screen">
+    {
+      hasMedia ? (
+        <Media media={media!} kind="video" controls={controls} />
+      ) : (
+        <PlaceholderScene hue={hue} />
+      )
+    }
+    <!-- top UI dots -->
+    <div class="ui ui-top">
+      <span class="dot"></span>
+      <span class="spacer"></span>
+      <span class="dot sm"></span>
+      <span class="dot sm"></span>
+    </div>
+    <!-- right action rail -->
+    <div class="ui ui-rail">
+      <span class="action"></span>
+      <span class="action"></span>
+      <span class="action"></span>
+    </div>
+    <!-- bottom caption bars -->
+    <div class="ui ui-bottom">
+      <span class="avatar-dot"></span>
+      <span class="bar"></span>
+      <span class="pill"></span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .phone {
+    position: relative;
+    aspect-ratio: 9 / 19;
+    background: var(--phone-shell);
+    border-radius: 30px;
+    padding: 8px;
+    box-shadow: var(--shadow);
+  }
+  .phone-screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+  .phone-screen :global(video),
+  .phone-screen :global(svg),
+  .phone-screen :global(iframe),
+  .phone-screen :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ui {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 2;
+  }
+  .ui-top {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+  }
+  .ui-top .spacer {
+    flex: 1;
+  }
+  .dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+  }
+  .dot.sm {
+    width: 16px;
+    height: 16px;
+  }
+  .ui-rail {
+    flex-direction: column;
+    right: 10px;
+    bottom: 70px;
+    gap: 14px;
+  }
+  .action {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.65);
+  }
+  .ui-bottom {
+    left: 12px;
+    bottom: 14px;
+    right: 12px;
+  }
+  .avatar-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4aa3ff;
+    flex: 0 0 auto;
+  }
+  .bar {
+    height: 8px;
+    width: 46%;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.85);
+  }
+  .pill {
+    height: 14px;
+    width: 30%;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+  }
+</style>
