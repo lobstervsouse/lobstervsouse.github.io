@@ -22,9 +22,21 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer {
+    position: relative;
     border-top: 1px solid var(--line);
     margin-top: var(--space-24);
     padding-block: var(--space-8);
+  }
+  /* a thin gradient hairline sitting on top of the divider */
+  .site-footer::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 84px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--grad);
   }
   .footer-inner {
     display: flex;

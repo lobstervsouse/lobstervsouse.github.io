@@ -47,12 +47,26 @@ export const profile = {
     heroFor: "for social media marketing",
     bio: "Social media marketer turning scrolls into communities. I craft content that educates, grows audiences, and occasionally goes viral — across short-form video, posts, and the written word.",
     role: "Social Media Marketing",
+    // About page: a short intro line followed by longer paragraphs. Separate
+    // paragraphs with a blank line — each becomes its own paragraph on the page.
+    aboutLede: "Hi, I'm Daria — I help brands show up on social with content that actually gets watched, shared and remembered.",
+    aboutBody: `I've spent the last few years living inside the feed: planning content calendars, writing hooks, editing short-form video and turning data into the next idea. My favourite work sits where creativity meets numbers — a reel that's fun to make AND moves the metric that matters.
+
+I work across short-form video, grid posts, and long-form writing, and I care just as much about strategy as about the final cut. Whether it's growing a community from zero or refreshing a tired brand voice, I like problems that need both taste and a spreadsheet.
+
+When I'm not in the editing timeline, you'll find me studying trends, breaking down why something went viral, and collecting references for the next campaign.`,
   },
   de: {
     heroLead: "Mein Portfolio",
     heroFor: "für Social-Media-Marketing",
     bio: "Social-Media-Marketing, das aus Scrollen Communities macht. Ich erstelle Inhalte, die informieren, Reichweite aufbauen und gelegentlich viral gehen — über Kurzvideos, Posts und das geschriebene Wort.",
     role: "Social-Media-Marketing",
+    aboutLede: "Hi, ich bin Daria — ich helfe Marken, auf Social Media mit Inhalten sichtbar zu werden, die wirklich gesehen, geteilt und erinnert werden.",
+    aboutBody: `Die letzten Jahre habe ich im Feed gelebt: Content-Kalender geplant, Hooks geschrieben, Kurzvideos geschnitten und aus Daten die nächste Idee gemacht. Meine liebste Arbeit liegt dort, wo Kreativität auf Zahlen trifft — ein Reel, das Spaß macht UND die Kennzahl bewegt, auf die es ankommt.
+
+Ich arbeite mit Kurzvideos, Grid-Posts und längeren Texten und lege auf Strategie genauso viel Wert wie auf den finalen Schnitt. Ob eine Community von null aufbauen oder eine müde Markenstimme auffrischen — ich mag Aufgaben, die Geschmack und Tabelle zugleich brauchen.
+
+Wenn ich nicht im Schnitt sitze, studiere ich Trends, analysiere, warum etwas viral ging, und sammle Referenzen für die nächste Kampagne.`,
   },
 };
 

@@ -1,0 +1,149 @@
+---
+// Reel-style detail view for a single video: a prominent vertical player on the
+// left, an editorial info column on the right. Shared by the EN + DE [slug]
+// pages so both languages stay identical. Bilingual via the `lang` prop.
+import PhoneMockup from "./PhoneMockup.astro";
+import { t } from "../data/ui";
+import type { Lang } from "../data/site";
+import { localizedPath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+  video: {
+    data: {
+      title: string;
+      description?: string;
+      tags: string[];
+      views?: string;
+      likes?: string;
+      media?: any;
+    };
+  };
+}
+const { lang, video } = Astro.props;
+const strings = t(lang);
+const base = import.meta.env.BASE_URL;
+---
+
+<section class="section detail">
+  <div class="container detail-grid">
+    <div class="detail-phone" data-reveal>
+      <PhoneMockup media={video.data.media} controls={true} />
+    </div>
+    <div class="detail-info" data-reveal style="--d:120ms">
+      <a href={localizedPath(base, lang, "videos")} class="eyebrow back-eyebrow" data-astro-prefetch>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
+        {strings.videosTitle}
+      </a>
+      <h1>{video.data.title}</h1>
+      {video.data.description && <p class="lead">{video.data.description}</p>}
+      <div class="stats">
+        {video.data.views && (
+          <div class="stat">
+            <span class="stat-num grad-text">{video.data.views}</span>
+            <span class="stat-label">{strings.views}</span>
+          </div>
+        )}
+        {video.data.likes && (
+          <div class="stat">
+            <span class="stat-num grad-text">{video.data.likes}</span>
+            <span class="stat-label">{strings.likes}</span>
+          </div>
+        )}
+      </div>
+      <div class="tags">
+        {video.data.tags.map((tag) => (
+          <span class="tag"><span class="hash">#</span>{tag}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .detail-grid {
+    display: grid;
+    grid-template-columns: minmax(240px, 340px) 1fr;
+    gap: var(--space-16);
+    align-items: center;
+  }
+  .detail-phone {
+    max-width: 340px;
+    margin-inline: auto;
+    width: 100%;
+  }
+  .back-eyebrow {
+    margin-bottom: var(--space-6);
+    transition: gap var(--transition), color var(--transition);
+  }
+  .back-eyebrow::before {
+    display: none;
+  }
+  .back-eyebrow:hover {
+    color: var(--accent);
+  }
+  .detail-info h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin-bottom: var(--space-4);
+  }
+  .lead {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: var(--space-8);
+  }
+  .stats {
+    display: flex;
+    gap: var(--space-12);
+    margin-bottom: var(--space-8);
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .stat-num {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    line-height: 1;
+  }
+  .stat-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .tag {
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    transition: border-color var(--transition), color var(--transition);
+  }
+  .tag:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .tag .hash {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  @media (max-width: 760px) {
+    .detail-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+  }
+</style>

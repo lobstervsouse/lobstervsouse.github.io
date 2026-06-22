@@ -1,11 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectBody from "../../components/ProjectBody.astro";
 import BackHome from "../../components/BackHome.astro";
-import Media from "../../components/Media.astro";
-import PlaceholderScene from "../../components/PlaceholderScene.astro";
 import { byLang, cleanSlug } from "../../lib/content";
-import { localizedPath } from "../../i18n/utils";
-import { t } from "../../data/ui";
 
 export async function getStaticPaths() {
   const projects = await byLang("projects", "en");
@@ -17,104 +14,12 @@ export async function getStaticPaths() {
 
 const lang = "en" as const;
 const { project, hue } = Astro.props;
-const strings = t(lang);
-const base = import.meta.env.BASE_URL;
 const { Content } = await project.render();
-const hasMedia =
-  project.data.media &&
-  (project.data.media.src || project.data.media.url || project.data.media.poster);
 ---
 
 <BaseLayout lang={lang} title={project.data.title} description={project.data.summary}>
-  <article class="section">
-    <div class="container narrow">
-      <a href={localizedPath(base, lang, "projects")} class="kicker" data-astro-prefetch>
-        ← {strings.projectsTitle}
-      </a>
-      <h1>{project.data.title}</h1>
-      <div class="meta">
-        {project.data.client && <span>{project.data.client}</span>}
-        {project.data.role && <span class="role">{project.data.role}</span>}
-      </div>
-
-      <div class="preview">
-        {
-          hasMedia ? (
-            <Media media={project.data.media!} kind="image" />
-          ) : (
-            <PlaceholderScene hue={hue} />
-          )
-        }
-      </div>
-
-      <div class="prose">
-        <Content />
-      </div>
-
-      {
-        project.data.link && (
-          <a class="btn btn-accent" href={project.data.link} target="_blank" rel="noopener noreferrer">
-            {strings.viewProject}
-          </a>
-        )
-      }
-    </div>
-  </article>
+  <ProjectBody lang={lang} project={project} hue={hue}>
+    <Content />
+  </ProjectBody>
   <BackHome lang={lang} />
 </BaseLayout>
-
-<style>
-  .narrow {
-    max-width: 760px;
-  }
-  .kicker {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    display: inline-block;
-    margin-bottom: var(--space-6);
-  }
-  .kicker:hover {
-    color: var(--accent);
-  }
-  h1 {
-    font-family: var(--font-serif);
-    font-size: clamp(2rem, 5vw, 3rem);
-    margin-bottom: var(--space-3);
-  }
-  .meta {
-    display: flex;
-    gap: var(--space-4);
-    color: var(--text-muted);
-    margin-bottom: var(--space-8);
-    flex-wrap: wrap;
-  }
-  .meta .role {
-    color: var(--accent);
-  }
-  .preview {
-    aspect-ratio: 16 / 9;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: var(--space-8);
-    box-shadow: var(--shadow);
-  }
-  .preview :global(svg),
-  .preview :global(img),
-  .preview :global(iframe) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .prose :global(h2) {
-    font-size: 1.4rem;
-    margin-top: var(--space-8);
-    margin-bottom: var(--space-3);
-  }
-  .prose :global(p) {
-    margin-block: var(--space-4);
-    line-height: 1.75;
-  }
-  .btn-accent {
-    margin-top: var(--space-8);
-  }
-</style>

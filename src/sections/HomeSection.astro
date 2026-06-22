@@ -17,17 +17,23 @@ const p = profile[lang];
 <section class="home">
   <div class="container home-grid">
     <header class="hero-head">
-      <h1>
+      <span class="eyebrow" data-reveal>{p.role}</span>
+      <h1 data-reveal style="--d:80ms">
         <span class="lead">{p.heroLead}</span>
-        <span class="for">— {p.heroFor}</span>
+        <span class="for serif-italic grad-text">{p.heroFor}</span>
       </h1>
+      <p class="bio" data-reveal style="--d:160ms">{p.bio}</p>
     </header>
 
-    <div class="home-avatar">
-      <Avatar size={300} />
+    <div class="home-avatar" data-reveal style="--d:120ms">
+      <span class="story-ring spin">
+        <span class="avatar-disc">
+          <Avatar size={260} />
+        </span>
+      </span>
     </div>
 
-    <div class="home-menu">
+    <div class="home-menu" data-reveal style="--d:200ms">
       <HomeNav lang={lang} />
     </div>
   </div>
@@ -35,56 +41,83 @@ const p = profile[lang];
 
 <style>
   .home {
-    padding-top: var(--space-8);
-    padding-bottom: var(--space-16);
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-24);
   }
   .home-grid {
     display: grid;
-    grid-template-columns: minmax(220px, 0.85fr) minmax(280px, 1fr);
+    grid-template-columns: minmax(220px, 0.8fr) minmax(300px, 1fr);
     grid-template-areas:
       "head head"
       "avatar menu";
-    gap: var(--space-12) var(--space-16);
+    column-gap: var(--space-16);
+    row-gap: var(--space-16);
     align-items: center;
   }
+
+  /* ── Editorial hero ── */
   .hero-head {
     grid-area: head;
-    margin-bottom: var(--space-4);
+    max-width: 60ch;
   }
   .hero-head h1 {
+    margin-top: var(--space-4);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+  }
+  .hero-head .lead {
+    display: block;
     font-family: var(--font-sans);
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-size: clamp(1.8rem, 4.5vw, 3.4rem);
-    line-height: 1.12;
+    font-size: clamp(2.1rem, 5.2vw, 4rem);
   }
   .hero-head .for {
     display: block;
+    font-size: clamp(2.2rem, 5.6vw, 4.3rem);
+    font-weight: 500;
+    line-height: 1.02;
+    margin-top: 0.08em;
+  }
+  .bio {
+    margin-top: var(--space-6);
+    max-width: 52ch;
     color: var(--text-muted);
-    font-size: 0.5em;
-    letter-spacing: 0.12em;
-    margin-top: 0.5em;
-    text-transform: none;
-    font-family: var(--font-serif);
-    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.7;
   }
 
+  /* ── Story-ring avatar ── */
   .home-avatar {
     grid-area: avatar;
     display: flex;
     justify-content: center;
   }
-  .home-avatar :global(svg) {
-    width: min(300px, 70vw);
+  .story-ring {
+    --ring: 5px;
+    --gap: 7px;
+  }
+  .avatar-disc {
+    display: grid;
+    place-items: end center;
+    width: min(280px, 64vw);
+    height: min(280px, 64vw);
+    overflow: hidden;
+    background: radial-gradient(
+      120% 120% at 50% 12%,
+      var(--bg-elev-2),
+      var(--bg-elev)
+    );
+  }
+  .avatar-disc :global(svg) {
+    width: 92%;
     height: auto;
-    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.35));
-    animation: floatIn 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.4));
+    animation: floatIn 0.8s var(--ease-out) both;
   }
   @keyframes floatIn {
     from {
       opacity: 0;
-      transform: translateY(20px) scale(0.96);
+      transform: translateY(18px) scale(0.96);
     }
   }
 
@@ -92,22 +125,27 @@ const p = profile[lang];
     grid-area: menu;
   }
 
-  @media (max-width: 760px) {
+  @media (max-width: 860px) {
     .home-grid {
       grid-template-columns: 1fr;
       grid-template-areas:
         "head"
         "avatar"
         "menu";
-      text-align: center;
-      gap: var(--space-8);
+      text-align: left;
+      row-gap: var(--space-12);
     }
-    .home-menu :global(.home-nav ul) {
-      align-items: center;
+    .home-avatar {
+      justify-content: flex-start;
+    }
+  }
+  @media (max-width: 560px) {
+    .home-avatar {
+      justify-content: center;
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .home-avatar :global(svg) {
+    .avatar-disc :global(svg) {
       animation: none;
     }
   }

@@ -3,6 +3,7 @@ import { site } from "../data/site";
 import { t } from "../data/ui";
 import type { Lang } from "../data/site";
 import { localizedPath, switchLangPath, otherLang } from "../i18n/utils";
+import MenuTrigger from "./MenuTrigger.astro";
 
 interface Props {
   lang: Lang;
@@ -60,6 +61,9 @@ const other = otherLang(lang).toUpperCase();
           fill="currentColor"></path>
       </svg>
     </button>
+
+    <!-- Three-bar navigation menu trigger (the drawer renders in BaseLayout) -->
+    <MenuTrigger lang={lang} />
   </div>
 </header>
 
@@ -102,14 +106,19 @@ const other = otherLang(lang).toUpperCase();
 
   .logo {
     font-family: var(--font-serif);
-    font-variant: small-caps;
-    letter-spacing: 0.18em;
-    font-size: 1.05rem;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    font-size: 1.25rem;
     font-weight: 600;
-    text-transform: lowercase;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    transition: opacity var(--transition);
   }
-  .logo::first-letter {
-    /* keeps small-caps consistent across browsers */
+  .logo:hover {
+    opacity: 0.82;
   }
 
   .header-tools {

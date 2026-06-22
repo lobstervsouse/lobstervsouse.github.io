@@ -21,5 +21,18 @@
     applyTheme();
     // Astro fires this after a View Transition navigation.
     document.addEventListener("astro:after-swap", applyTheme);
+
+    // Enable colour transitions only AFTER the first paint, so the toggle
+    // animates but a fresh load / refresh never wipes through a brown flash.
+    function enableTransitions() {
+      requestAnimationFrame(function () {
+        document.documentElement.classList.add("theme-ready");
+      });
+    }
+    if (document.readyState === "loading") {
+      window.addEventListener("DOMContentLoaded", enableTransitions);
+    } else {
+      enableTransitions();
+    }
   })();
 </script>

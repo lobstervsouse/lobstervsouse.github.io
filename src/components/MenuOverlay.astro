@@ -1,0 +1,234 @@
+---
+// The slide-in navigation drawer. Rendered at BODY level (not in the header) so
+// its position:fixed escapes the header's backdrop-filter containing block and
+// covers the full viewport. The trigger button (MenuTrigger) lives in the header
+// and toggles this by id. Lists the SAME destinations as the home-page hub (from
+// the shared navItems helper). Closes on Escape, scrim click, the ✕, or on nav.
+import type { Lang } from "../data/site";
+import { t } from "../data/ui";
+import { localizedPath } from "../i18n/utils";
+import { navItems } from "../lib/nav";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const strings = t(lang);
+const base = import.meta.env.BASE_URL;
+const items = navItems(lang);
+const homeHref = localizedPath(base, lang, "");
+---
+
+<div id="menu-overlay" class="menu-overlay" aria-hidden="true">
+  <aside class="menu-panel" role="dialog" aria-modal="true" aria-label={strings.menuTitle}>
+    <div class="menu-top">
+      <span class="menu-eyebrow">{strings.menuTitle}</span>
+      <button id="menu-close" class="tool menu-close" type="button" aria-label={strings.menuClose}>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+    </div>
+
+    <nav class="menu-nav" aria-label={strings.menuTitle}>
+      <ul>
+        <li style="--i:0">
+          <a href={homeHref} class="m-link sans" data-astro-prefetch>
+            <span class="m-label">{strings.nav.home}</span>
+            <sup class="m-num">00</sup>
+          </a>
+        </li>
+        {
+          items.map((item, i) => (
+            <li style={`--i:${i + 1}`}>
+              <a
+                href={localizedPath(base, lang, item.path)}
+                class:list={["m-link", item.style, { cta: item.cta }]}
+                data-astro-prefetch
+              >
+                <span class:list={["m-label", item.style === "serif" && "serif-italic"]}>
+                  {item.label}
+                </span>
+                <sup class="m-num">{item.num}</sup>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </aside>
+</div>
+
+<script>
+  function setupMenu() {
+    const trigger = document.getElementById("menu-trigger");
+    const overlay = document.getElementById("menu-overlay");
+    const closeBtn = document.getElementById("menu-close");
+    if (!trigger || !overlay || trigger.dataset.bound) return;
+    trigger.dataset.bound = "true";
+
+    function open() {
+      overlay!.classList.add("is-open");
+      overlay!.setAttribute("aria-hidden", "false");
+      trigger!.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden";
+      overlay!.querySelector<HTMLElement>("a")?.focus();
+    }
+    function close() {
+      overlay!.classList.remove("is-open");
+      overlay!.setAttribute("aria-hidden", "true");
+      trigger!.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
+    }
+
+    trigger.addEventListener("click", open);
+    closeBtn?.addEventListener("click", close);
+    // Click on the scrim (the overlay itself, outside the panel) closes.
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && overlay!.classList.contains("is-open")) close();
+    });
+    // Close before a link navigation (View Transitions) so it isn't left open.
+    document.addEventListener("astro:before-swap", () => close());
+  }
+  setupMenu();
+  document.addEventListener("astro:after-swap", setupMenu);
+</script>
+
+<style>
+  /* ── Overlay = scrim + right-hand drawer ── */
+  .menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    background: rgba(6, 6, 8, 0.5);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.35s var(--ease-out), visibility 0.35s var(--ease-out);
+  }
+  .menu-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .menu-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: min(400px, 86vw);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    padding: var(--space-6) var(--space-8);
+    background: var(--bg-elev);
+    border-left: 1px solid var(--line);
+    box-shadow: -40px 0 80px -28px rgba(0, 0, 0, 0.55);
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.42s var(--ease-out);
+  }
+  .menu-overlay.is-open .menu-panel {
+    transform: none;
+  }
+
+  .menu-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .menu-eyebrow {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .menu-close {
+    width: 40px;
+  }
+  .menu-close:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .menu-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .menu-nav li {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  .menu-overlay.is-open .menu-nav li {
+    animation: mIn 0.4s var(--ease-out) forwards;
+    animation-delay: calc(var(--i) * 45ms + 120ms);
+  }
+  @keyframes mIn {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .m-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: 0.18em 0;
+    transition: transform var(--transition);
+  }
+  .m-label {
+    font-size: clamp(1.6rem, 5vw, 2.1rem);
+    line-height: 1.15;
+    font-weight: 500;
+  }
+  .m-link.sans .m-label {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .m-num {
+    font-family: var(--font-sans);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    transition: color var(--transition);
+  }
+  .m-link:hover {
+    transform: translateX(6px);
+  }
+  .m-link:hover .m-label,
+  .m-link.cta .m-label {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .m-link:hover .m-num {
+    color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu-overlay,
+    .menu-panel {
+      transition: opacity 0.2s linear;
+    }
+    .menu-nav li {
+      opacity: 1;
+      transform: none;
+      animation: none !important;
+    }
+  }
+</style>

@@ -4,6 +4,7 @@ import { t } from "../data/ui";
 import { site, profile } from "../data/site";
 import ContactForm from "../components/ContactForm.astro";
 import SocialLinks from "../components/SocialLinks.astro";
+import SectionHead from "../components/SectionHead.astro";
 
 interface Props {
   lang: Lang;
@@ -15,15 +16,16 @@ const p = profile[lang];
 
 <section class="section">
   <div class="container">
-    <div class="section-head">
-      <h1 class="serif-italic" style="font-family: var(--font-serif); font-style: italic;">
-        {strings.contactTitle}
-      </h1>
-      <span class="num">06</span>
-    </div>
+    <SectionHead
+      eyebrow={strings.contactEyebrow}
+      title={strings.contactTitle}
+      num="06"
+      serif
+      lede={strings.contactLede}
+    />
 
     <div class="contact-grid">
-      <div class="contact-intro">
+      <div class="contact-intro" data-reveal>
         <p class="bio">{p.bio}</p>
         <p class="email-line">
           {strings.orEmail}
@@ -32,7 +34,9 @@ const p = profile[lang];
         <SocialLinks lang={lang} showLabel />
       </div>
 
-      <ContactForm lang={lang} />
+      <div data-reveal style="--d:120ms">
+        <ContactForm lang={lang} />
+      </div>
     </div>
   </div>
 </section>

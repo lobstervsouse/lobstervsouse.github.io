@@ -1,0 +1,31 @@
+---
+// Shared editorial section header (Instagram-native system): a gradient eyebrow
+// label, a confident heading, and a small superscript section number.
+//
+// Props:
+//   eyebrow  — small tracked label above the title (e.g. "Reels", "Field notes")
+//   title    — the heading text
+//   num      — the section number, e.g. "01"
+//   serif    — true → Fraunces display; false → geometric Inter (matches the
+//              home-nav style of that section)
+//   center   — centre-align (used by carousel/grid sections that read best so)
+//   lede     — optional supporting sentence under the title
+interface Props {
+  eyebrow: string;
+  title: string;
+  num: string;
+  serif?: boolean;
+  center?: boolean;
+  lede?: string;
+}
+const { eyebrow, title, num, serif = true, center = false, lede } = Astro.props;
+---
+
+<div class:list={["section-head", { center }]}>
+  <span class="eyebrow" data-reveal>{eyebrow}</span>
+  <h1 class:list={[{ sans: !serif }]} data-reveal style="--d:80ms">
+    <span>{title}</span>
+    <sup class="num">{num}</sup>
+  </h1>
+  {lede && <p class="lede" data-reveal style="--d:140ms">{lede}</p>}
+</div>

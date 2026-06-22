@@ -27,8 +27,10 @@ import { defineConfig } from "astro/config";
 // placeholders — replace USERNAME and REPO with your real values.
 // ────────────────────────────────────────────────────────────────────────────
 
-const SITE = "https://USERNAME.github.io";
-const BASE = "/REPO";
+// This repo is a GitHub *user* page (lobstervsouse.github.io), so it is served
+// at the domain root — base is "/", not a "/REPO" sub-folder.
+const SITE = "https://lobstervsouse.github.io";
+const BASE = "/";
 
 export default defineConfig({
   site: SITE,
@@ -45,5 +47,13 @@ export default defineConfig({
   build: {
     // Keep clean, shareable URLs like /videos/ instead of /videos.html
     format: "directory",
+  },
+  // Dev-server settings. `allowedHosts` lets you expose `npm run dev` through a
+  // tunnel (e.g. a Cloudflare quick tunnel) so others can preview it. A leading
+  // dot allows that domain and all its random subdomains.
+  vite: {
+    server: {
+      allowedHosts: [".trycloudflare.com", ".ngrok-free.app", ".loca.lt"],
+    },
   },
 });

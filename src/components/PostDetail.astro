@@ -1,0 +1,117 @@
+---
+// Instagram-post reading view for a single post: the post card on the left, an
+// editorial meta column (title + hashtags) on the right; stacks on mobile.
+// Shared by the EN + DE [slug] pages so both languages stay identical.
+import PostCard from "./PostCard.astro";
+import { t } from "../data/ui";
+import type { Lang } from "../data/site";
+import { localizedPath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+  post: {
+    data: {
+      title?: string;
+      caption?: string;
+      likes?: string;
+      handle?: string;
+      tags: string[];
+      media?: any;
+    };
+  };
+  hue: number;
+}
+const { lang, post, hue } = Astro.props;
+const strings = t(lang);
+const base = import.meta.env.BASE_URL;
+---
+
+<section class="section detail">
+  <div class="container">
+    <a href={localizedPath(base, lang, "posts")} class="eyebrow back-eyebrow" data-astro-prefetch>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      {strings.postsTitle}
+    </a>
+    <div class="post-detail">
+      <div class="post-detail-card" data-reveal>
+        <PostCard
+          handle={post.data.handle}
+          caption={post.data.caption}
+          likes={post.data.likes}
+          hue={hue}
+          media={post.data.media}
+          variant="detail"
+        />
+      </div>
+      <aside class="post-detail-meta" data-reveal style="--d:120ms">
+        {post.data.title && <h1>{post.data.title}</h1>}
+        <div class="tags">
+          {post.data.tags.map((tag) => (
+            <span class="tag"><span class="hash">#</span>{tag}</span>
+          ))}
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<style>
+  .back-eyebrow {
+    margin-bottom: var(--space-8);
+  }
+  .back-eyebrow::before {
+    display: none;
+  }
+  .back-eyebrow:hover {
+    color: var(--accent);
+  }
+  .post-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 460px) 1fr;
+    gap: var(--space-12);
+    align-items: start;
+  }
+  .post-detail-meta h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin-bottom: var(--space-6);
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .tag {
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    transition: border-color var(--transition), color var(--transition);
+  }
+  .tag:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .tag .hash {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  @media (max-width: 760px) {
+    .post-detail {
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+    .post-detail-meta {
+      text-align: center;
+    }
+    .tags {
+      justify-content: center;
+    }
+  }
+</style>

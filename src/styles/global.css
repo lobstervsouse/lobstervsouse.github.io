@@ -8,13 +8,21 @@
    Loaded from Google Fonts in BaseLayout with preconnect for speed. */
 
 :root {
-  /* ── Brand accent (warm blush pink, pulled from Daria's avatar sweater) ── */
-  --accent: #e8a0b4;
-  --accent-strong: #d97e98;
-  --accent-contrast: #1a1a1a;
+  /* ── Brand identity: an Instagram-style gradient (purple → pink → amber).
+        `--accent` is the single solid pink that lives inside the gradient, used
+        wherever a flat colour is needed (focus rings, hovers, small marks). ── */
+  --accent: #e1306c;
+  --accent-strong: #c41f59;
+  --accent-contrast: #ffffff;
+
+  /* The signature gradient + variants. */
+  --grad: linear-gradient(115deg, #8a3ab9 0%, #e1306c 48%, #f7a45c 100%);
+  --grad-vivid: linear-gradient(115deg, #7b2ff7 0%, #e1306c 45%, #ffae42 100%);
+  --grad-ring: conic-gradient(from 210deg, #f7a45c, #e1306c, #8a3ab9, #4f5bd5, #f7a45c);
 
   /* ── Type ── */
-  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* ── Spacing scale ── */
@@ -30,36 +38,50 @@
 
   --radius: 14px;
   --radius-lg: 22px;
+  --radius-xl: 30px;
   --maxw: 1180px;
 
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-/* ── DARK THEME (default) ── */
+/* ── DARK THEME (default) — a deep, layered near-black canvas ── */
 :root,
 :root[data-theme="dark"] {
-  --bg: #1a1a1a;
-  --bg-elev: #232323;
-  --bg-elev-2: #2c2c2c;
+  --bg: #0c0c0e;
+  --bg-elev: #161619;
+  --bg-elev-2: #202024;
   --text: #f3efe9;
-  --text-muted: #a8a39b;
-  --line: #3a3a3a;
-  --shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.7);
-  --phone-shell: #0d0d0d;
+  --text-muted: #9b968f;
+  --line: #2a2a2f;
+  --line-strong: #3a3a41;
+  --shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  --glow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
+    0 14px 40px -12px color-mix(in srgb, var(--accent) 45%, transparent);
+  --phone-shell: #08080a;
+  --atmos-1: color-mix(in srgb, #8a3ab9 18%, transparent);
+  --atmos-2: color-mix(in srgb, #e1306c 15%, transparent);
+  --card-veil: rgba(255, 255, 255, 0.015);
   color-scheme: dark;
 }
 
 /* ── LIGHT / DAY THEME ── */
 :root[data-theme="light"] {
-  --bg: #faf7f2;
+  --bg: #f7f4ef;
   --bg-elev: #ffffff;
   --bg-elev-2: #f1ece4;
-  --text: #1f1c19;
+  --text: #1c1a17;
   --text-muted: #6a655d;
-  --line: #e3ddd3;
-  --shadow: 0 18px 50px -22px rgba(60, 50, 40, 0.28);
+  --line: #e6e0d6;
+  --line-strong: #d8d0c2;
+  --shadow: 0 24px 60px -28px rgba(60, 50, 40, 0.3);
+  --glow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
+    0 14px 40px -14px color-mix(in srgb, var(--accent) 35%, transparent);
   --phone-shell: #161616;
   --accent-contrast: #ffffff;
+  --atmos-1: color-mix(in srgb, #8a3ab9 12%, transparent);
+  --atmos-2: color-mix(in srgb, #f7a45c 16%, transparent);
+  --card-veil: rgba(20, 16, 12, 0.015);
   color-scheme: light;
 }
 
@@ -83,8 +105,40 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  transition: background var(--transition), color var(--transition);
   min-height: 100vh;
+  position: relative;
+}
+
+/* Only animate the background/colour AFTER the first paint. On a fresh load the
+   theme is already correct (set inline before paint), so we must NOT transition
+   then — otherwise any momentary correction wipes through a muddy brown.
+   `.theme-ready` is added by ThemeScript once the page has loaded, so the
+   day/night TOGGLE still animates smoothly. */
+:root.theme-ready body {
+  transition: background var(--transition), color var(--transition);
+}
+
+/* Atmosphere: two soft gradient light-sources fixed behind everything, so the
+   dark canvas has depth instead of reading as flat grey. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(1000px 680px at 8% -8%, var(--atmos-1), transparent 60%),
+    radial-gradient(820px 560px at 102% 2%, var(--atmos-2), transparent 58%);
+}
+/* A whisper of film grain to kill banding and add a premium, tactile feel. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 h1, h2, h3, h4 {
@@ -120,27 +174,63 @@ button {
   padding-block: var(--space-16);
 }
 
-/* Section heading in the geometric sans, wide-tracked, with a small superscript
-   number like the Canva pages (e.g. "Videos 01"). */
+/* Editorial section header (Instagram-native system): a gradient eyebrow label,
+   a confident heading echoing the home hero's restraint, and a small superscript
+   section number (01–06). Replaces the old wireframe-y all-caps wide tracking. */
 .section-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: var(--space-3);
   margin-bottom: var(--space-12);
+  max-width: 60ch;
+}
+/* Centred variant for carousel/grid sections that read best symmetrically. */
+.section-head.center {
+  margin-inline: auto;
   text-align: center;
 }
+.section-head.center .eyebrow {
+  justify-content: center;
+}
+.section-head.center .eyebrow::before {
+  display: none;
+}
 .section-head h1 {
-  font-family: var(--font-sans);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  font-family: var(--font-display);
   font-weight: 500;
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  letter-spacing: 0.04em;
+  font-size: clamp(2.2rem, 5.4vw, 3.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  flex-wrap: wrap;
+}
+.section-head.center h1 {
+  justify-content: center;
+}
+/* A sans variant for sections whose home-nav label is geometric sans. */
+.section-head h1.sans {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 .section-head .num {
-  font-size: 0.8rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--text-muted);
   letter-spacing: 0.2em;
-  margin-top: 0.4em;
+  align-self: flex-start;
+  margin-top: 0.2em;
+}
+.section-head .lede {
+  margin-top: var(--space-4);
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 52ch;
+}
+.section-head.center .lede {
+  margin-inline: auto;
 }
 
 /* Serif-italic variant used for nav items like "Posts", "Other projects" */
@@ -169,13 +259,19 @@ button {
   border-color: var(--accent);
 }
 .btn-accent {
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border-color: var(--accent);
+  background: var(--grad);
+  background-size: 160% 160%;
+  background-position: 0% 50%;
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--accent) 60%, transparent);
+  transition: transform var(--transition), background-position 0.5s var(--ease-out),
+    box-shadow var(--transition);
 }
 .btn-accent:hover {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
+  background-position: 100% 50%;
+  border-color: transparent;
+  box-shadow: 0 16px 38px -10px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 /* ── Hashtag filter chips ── */
@@ -206,9 +302,10 @@ button {
   border-color: var(--accent);
 }
 .chip[aria-pressed="true"] {
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border-color: var(--accent);
+  background: var(--grad);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--accent) 60%, transparent);
 }
 .chip[aria-pressed="true"] .hash {
   color: var(--accent-contrast);
@@ -272,6 +369,149 @@ button {
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 0.35s;
+    animation-duration: 0.4s;
+    animation-timing-function: var(--ease-out);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MODERN UTILITIES (Instagram-native editorial system)
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Gradient text — paint any text with the signature gradient. */
+.grad-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* keep an accessible fallback if clip is unsupported */
+  -webkit-text-fill-color: transparent;
+}
+
+/* Story-ring: the Instagram avatar treatment — a gradient ring with a small
+   gap, wrapping any avatar/photo. Add `.spin` for a slow rotation. */
+.story-ring {
+  --ring: 4px;
+  --gap: 5px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  padding: var(--ring);
+  background: var(--grad-ring);
+  box-shadow: 0 18px 50px -18px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.story-ring > * {
+  border-radius: 50%;
+  padding: var(--gap);
+  background: var(--bg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .story-ring.spin {
+    animation: ringSpin 14s linear infinite;
+  }
+  @keyframes ringSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  /* counter-rotate the inner content so the photo stays upright */
+  .story-ring.spin > * {
+    animation: ringSpin 14s linear infinite reverse;
+  }
+}
+
+/* Eyebrow label — small, tracked, muted; pairs with big editorial headings. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.eyebrow::before {
+  content: "";
+  width: 1.8em;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--grad);
+}
+
+/* Media card — the shared tactile, Instagram-alive card treatment used by the
+   Posts / Texts / Projects grids. Rounded, soft border + shadow, lifts on hover.
+   Pair with `.media-frame` on the inner media wrapper to get the hover zoom. */
+.media-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.4s var(--ease-out), border-color var(--transition),
+    box-shadow 0.4s var(--ease-out);
+}
+.media-card:hover,
+.media-card:focus-within {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  box-shadow: var(--glow);
+}
+/* The media wrapper that clips + zooms its contents on card hover. */
+.media-frame {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-elev-2);
+}
+.media-frame > :is(img, video, svg, iframe) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease-out);
+}
+.media-card:hover .media-frame > :is(img, video, svg) {
+  transform: scale(1.05);
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-card:hover .media-frame > :is(img, video, svg) {
+    transform: none;
+  }
+}
+
+/* Frosted caption bar — an Instagram-style translucent strip that sits over the
+   bottom of media. Use inside a `.media-frame`. */
+.frost-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  color: #fff;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  backdrop-filter: blur(2px);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Scroll-reveal — elements tagged [data-reveal] start hidden and animate in
+   when they enter the viewport (JS adds .is-in). Stagger with --d. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+    transition-delay: var(--d, 0ms);
+    will-change: opacity, transform;
+  }
+  [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
   }
 }

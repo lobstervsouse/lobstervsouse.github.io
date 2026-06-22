@@ -96,10 +96,11 @@ const links = (
     transition: all var(--transition);
   }
   a:hover {
-    color: var(--accent-contrast);
-    background: var(--accent);
-    border-color: var(--accent);
+    color: #fff;
+    background: var(--grad);
+    border-color: transparent;
     transform: translateY(-2px);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 65%, transparent);
   }
   .compact a {
     width: 38px;

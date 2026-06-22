@@ -1,10 +1,8 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import PhoneMockup from "../../../components/PhoneMockup.astro";
+import VideoDetail from "../../../components/VideoDetail.astro";
 import BackHome from "../../../components/BackHome.astro";
 import { byLang, cleanSlug } from "../../../lib/content";
-import { localizedPath } from "../../../i18n/utils";
-import { t } from "../../../data/ui";
 
 export async function getStaticPaths() {
   const videos = await byLang("videos", "de");
@@ -16,95 +14,9 @@ export async function getStaticPaths() {
 
 const lang = "de" as const;
 const { video } = Astro.props;
-const strings = t(lang);
-const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout lang={lang} title={video.data.title} description={video.data.description}>
-  <section class="section detail">
-    <div class="container detail-grid">
-      <div class="detail-phone">
-        <PhoneMockup media={video.data.media} controls={true} />
-      </div>
-      <div class="detail-info">
-        <a href={localizedPath(base, lang, "videos")} class="kicker" data-astro-prefetch>
-          ← {strings.videosTitle}
-        </a>
-        <h1>{video.data.title}</h1>
-        {video.data.description && <p class="lead">{video.data.description}</p>}
-        <div class="stats">
-          {video.data.views && <span><strong>{video.data.views}</strong> Aufrufe</span>}
-          {video.data.likes && <span><strong>{video.data.likes}</strong> Likes</span>}
-        </div>
-        <div class="tags">
-          {video.data.tags.map((tag) => (
-            <span class="tag"><span class="hash">#</span>{tag}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-  </section>
+  <VideoDetail lang={lang} video={video} />
   <BackHome lang={lang} />
 </BaseLayout>
-
-<style>
-  .detail-grid {
-    display: grid;
-    grid-template-columns: minmax(220px, 320px) 1fr;
-    gap: var(--space-16);
-    align-items: center;
-  }
-  .detail-phone {
-    max-width: 320px;
-    margin-inline: auto;
-    width: 100%;
-  }
-  .kicker {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    display: inline-block;
-    margin-bottom: var(--space-4);
-  }
-  .kicker:hover {
-    color: var(--accent);
-  }
-  .detail-info h1 {
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    margin-bottom: var(--space-4);
-  }
-  .lead {
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    margin-bottom: var(--space-6);
-  }
-  .stats {
-    display: flex;
-    gap: var(--space-6);
-    margin-bottom: var(--space-6);
-  }
-  .stats strong {
-    color: var(--accent);
-  }
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-  .tag {
-    padding: 0.4em 0.9em;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-  }
-  .tag .hash {
-    color: var(--accent);
-    font-weight: 700;
-  }
-  @media (max-width: 760px) {
-    .detail-grid {
-      grid-template-columns: 1fr;
-      gap: var(--space-8);
-    }
-  }
-</style>

@@ -1,7 +1,8 @@
 ---
-// Video carousel (Canva page 2): three phones visible, the centre one enlarged,
-// left/right arrows, keyboard + swipe support. Each slide links to its detail
-// page. Filtering by hashtag re-flows the visible set.
+// Video carousel (Canva page 2): a centred "coverflow" strip — the SELECTED
+// phone sits dead-centre and is enlarged; neighbours shrink + dim. The arrows
+// move the selection along the strip and the whole track re-centres on it.
+// Keyboard + swipe supported. Filtering by hashtag re-flows the visible set.
 import PhoneMockup from "./PhoneMockup.astro";
 import { t } from "../data/ui";
 import type { Lang } from "../data/site";
@@ -35,25 +36,27 @@ const base = import.meta.env.BASE_URL;
     </svg>
   </button>
 
-  <div class="track" role="list">
-    {
-      videos.map((v, i) => (
-        <a
-          class="slide"
-          role="listitem"
-          href={localizedPath(base, lang, `videos/${cleanSlug(v.slug)}`)}
-          data-index={i}
-          data-tags={v.data.tags.join(" ")}
-          data-astro-prefetch
-        >
-          <PhoneMockup media={v.data.media} hue={(i * 47) % 360} class="slide-phone" />
-          <div class="slide-meta">
-            <h3>{v.data.title}</h3>
-            {v.data.views && <span class="views">{v.data.views}</span>}
-          </div>
-        </a>
-      ))
-    }
+  <div class="viewport">
+    <div class="track" role="list">
+      {
+        videos.map((v, i) => (
+          <a
+            class="slide"
+            role="listitem"
+            href={localizedPath(base, lang, `videos/${cleanSlug(v.slug)}`)}
+            data-index={i}
+            data-tags={v.data.tags.join(" ")}
+            data-astro-prefetch
+          >
+            <PhoneMockup media={v.data.media} hue={(i * 47) % 360} class="slide-phone" />
+            <div class="slide-meta">
+              <h3>{v.data.title}</h3>
+              {v.data.views && <span class="views">{v.data.views}</span>}
+            </div>
+          </a>
+        ))
+      }
+    </div>
   </div>
 
   <button class="arrow next" type="button" aria-label={strings.next}>
@@ -69,6 +72,7 @@ const base = import.meta.env.BASE_URL;
     if (!root || (root as HTMLElement).dataset.bound) return;
     (root as HTMLElement).dataset.bound = "true";
 
+    const viewport = root.querySelector<HTMLElement>(".viewport")!;
     const track = root.querySelector<HTMLElement>(".track")!;
     const prev = root.querySelector<HTMLButtonElement>(".prev")!;
     const next = root.querySelector<HTMLButtonElement>(".next")!;
@@ -80,26 +84,36 @@ const base = import.meta.env.BASE_URL;
     }
     let active = 0;
 
+    // Translate the track so the active slide's centre meets the viewport's
+    // centre. offsetLeft is measured inside the track (position: relative) and
+    // is unaffected by the transform, so this stays correct on every call.
+    function center() {
+      const slides = visibleSlides();
+      if (!slides.length) return;
+      active = Math.max(0, Math.min(active, slides.length - 1));
+      const el = slides[active];
+      const offset =
+        viewport.clientWidth / 2 - (el.offsetLeft + el.offsetWidth / 2);
+      track.style.transform = `translate3d(${offset}px, 0, 0)`;
+    }
+
     function render() {
       const slides = visibleSlides();
-      if (slides.length === 0) return;
+      if (!slides.length) return;
       active = Math.max(0, Math.min(active, slides.length - 1));
       slides.forEach((s, i) => {
         s.classList.toggle("is-active", i === active);
         // distance from active controls scale/opacity via a CSS var
         s.style.setProperty("--dist", String(Math.abs(i - active)));
-        s.style.order = String(i);
+        s.setAttribute("aria-current", i === active ? "true" : "false");
+        s.tabIndex = i === active ? 0 : -1;
       });
-      const activeEl = slides[active];
-      activeEl?.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
+      center();
     }
 
     function go(delta: number) {
       const slides = visibleSlides();
+      if (!slides.length) return;
       active = (active + delta + slides.length) % slides.length;
       render();
     }
@@ -118,16 +132,50 @@ const base = import.meta.env.BASE_URL;
       }
     });
 
-    // Re-centre when the filter changes the visible set.
+    // Touch swipe.
+    let startX = 0;
+    track.addEventListener(
+      "touchstart",
+      (e) => (startX = e.touches[0].clientX),
+      { passive: true },
+    );
+    track.addEventListener(
+      "touchend",
+      (e) => {
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+      },
+      { passive: true },
+    );
+
+    // Re-centre when the FILTER changes which slides are visible. We compare the
+    // visible set first, so our own per-render style writes (the `--dist` var)
+    // don't retrigger this and reset the selection — that feedback loop is what
+    // made the arrows appear dead (every click snapped straight back to 0).
+    const visibleKey = () =>
+      visibleSlides()
+        .map((s) => s.dataset.index)
+        .join(",");
+    let lastVisibleKey = visibleKey();
     const observer = new MutationObserver(() => {
+      const key = visibleKey();
+      if (key === lastVisibleKey) return;
+      lastVisibleKey = key;
       active = 0;
       render();
     });
     track.querySelectorAll(".slide").forEach((s) =>
       observer.observe(s, { attributes: true, attributeFilter: ["style"] }),
     );
+    let rt: number | undefined;
+    window.addEventListener("resize", () => {
+      window.clearTimeout(rt);
+      rt = window.setTimeout(center, 120);
+    });
 
     render();
+    // One more pass after fonts/images settle so widths are final.
+    window.setTimeout(center, 300);
   }
   setupCarousel();
   document.addEventListener("astro:after-swap", setupCarousel);
@@ -140,38 +188,51 @@ const base = import.meta.env.BASE_URL;
     gap: var(--space-4);
     justify-content: center;
   }
+  .viewport {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    /* room so the enlarged active phone isn't clipped top/bottom */
+    padding-block: var(--space-6);
+  }
   .track {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: var(--space-6);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding-block: var(--space-6);
-    padding-inline: var(--space-6);
-    flex: 1;
-    justify-content: center;
-    scrollbar-width: none;
-  }
-  .track::-webkit-scrollbar {
-    display: none;
+    gap: var(--space-8);
+    width: max-content;
+    /* No margin:auto here — the JS transform handles all centring. A margin
+       would offset offsetLeft and fight the translate, breaking the arrows. */
+    transition: transform 0.5s var(--ease-out);
+    will-change: transform;
   }
 
   .slide {
     flex: 0 0 auto;
     width: clamp(170px, 22vw, 230px);
-    scroll-snap-align: center;
     text-align: center;
+    cursor: pointer;
     transition: transform var(--transition), opacity var(--transition);
     /* phones further from centre shrink + dim */
     transform: scale(calc(1 - var(--dist, 1) * 0.12));
-    opacity: calc(1 - var(--dist, 1) * 0.35);
+    opacity: calc(1 - var(--dist, 1) * 0.32);
   }
   .slide.is-active {
     transform: scale(1.08);
     opacity: 1;
+    cursor: default;
   }
-  .slide:hover {
-    opacity: 1;
+  .slide :global(.phone) {
+    transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+  }
+  .slide.is-active :global(.phone) {
+    box-shadow: var(--glow);
+  }
+  .slide:not(.is-active):hover {
+    opacity: 0.85;
+  }
+  .slide:not(.is-active):hover :global(.phone) {
+    transform: translateY(-6px);
   }
   .slide-meta {
     margin-top: var(--space-4);
@@ -179,6 +240,14 @@ const base = import.meta.env.BASE_URL;
   .slide-meta h3 {
     font-size: 1rem;
     font-weight: 600;
+    transition: color var(--transition);
+  }
+  .slide.is-active .slide-meta h3 {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
   .views {
     color: var(--text-muted);
@@ -198,10 +267,11 @@ const base = import.meta.env.BASE_URL;
     transition: all var(--transition);
   }
   .arrow:hover {
-    background: var(--accent);
-    color: var(--accent-contrast);
-    border-color: var(--accent);
-    transform: scale(1.05);
+    background: var(--grad);
+    color: #fff;
+    border-color: transparent;
+    transform: scale(1.06);
+    box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--accent) 60%, transparent);
   }
 
   @media (max-width: 640px) {
@@ -211,6 +281,12 @@ const base = import.meta.env.BASE_URL;
     .arrow {
       width: 46px;
       height: 46px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track {
+      transition: none;
     }
   }
 </style>

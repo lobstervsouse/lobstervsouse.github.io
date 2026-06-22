@@ -1,0 +1,54 @@
+---
+// The three-bar button that lives in the header. It only toggles the drawer
+// (MenuOverlay), which is rendered at body level so its position:fixed isn't
+// trapped by the header's backdrop-filter containing block.
+import type { Lang } from "../data/site";
+import { t } from "../data/ui";
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const strings = t(lang);
+---
+
+<button
+  id="menu-trigger"
+  class="tool menu-trigger"
+  type="button"
+  aria-label={strings.menuOpen}
+  aria-haspopup="dialog"
+  aria-expanded="false"
+  aria-controls="menu-overlay"
+>
+  <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+</button>
+
+<style>
+  .menu-trigger {
+    width: 40px;
+    gap: 0;
+  }
+  .bars {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    width: 18px;
+  }
+  .bars span {
+    height: 2px;
+    width: 100%;
+    border-radius: 2px;
+    background: currentColor;
+    transition: width var(--transition);
+  }
+  .menu-trigger:hover {
+    color: var(--accent);
+  }
+  .menu-trigger:hover .bars span:nth-child(1) {
+    width: 65%;
+  }
+  .menu-trigger:hover .bars span:nth-child(3) {
+    width: 80%;
+  }
+</style>

@@ -1,0 +1,140 @@
+---
+// Case-study reading view for a single project: a hero media preview, an
+// editorial headline + client/role meta, the rendered markdown, and an optional
+// "view project" CTA. Shared by the EN + DE [slug] pages. The rendered
+// <Content /> is passed in as the default slot.
+import Media from "./Media.astro";
+import PlaceholderScene from "./PlaceholderScene.astro";
+import { t } from "../data/ui";
+import type { Lang } from "../data/site";
+import { localizedPath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+  project: {
+    data: {
+      title: string;
+      summary?: string;
+      client?: string;
+      role?: string;
+      link?: string;
+      media?: any;
+    };
+  };
+  hue: number;
+}
+const { lang, project, hue } = Astro.props;
+const strings = t(lang);
+const base = import.meta.env.BASE_URL;
+const hasMedia =
+  project.data.media &&
+  (project.data.media.src || project.data.media.url || project.data.media.poster);
+---
+
+<article class="section">
+  <div class="container narrow">
+    <a href={localizedPath(base, lang, "projects")} class="eyebrow back-eyebrow" data-astro-prefetch>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      {strings.projectsTitle}
+    </a>
+    <header class="proj-head" data-reveal>
+      <h1>{project.data.title}</h1>
+      {project.data.summary && <p class="standfirst">{project.data.summary}</p>}
+      <div class="meta">
+        {project.data.client && <span>{project.data.client}</span>}
+        {project.data.role && <span class="role">{project.data.role}</span>}
+      </div>
+    </header>
+
+    <div class="preview media-frame" data-reveal style="--d:100ms">
+      {
+        hasMedia ? (
+          <Media media={project.data.media!} kind="image" />
+        ) : (
+          <PlaceholderScene hue={hue} />
+        )
+      }
+    </div>
+
+    <div class="prose" data-reveal style="--d:160ms">
+      <slot />
+    </div>
+
+    {
+      project.data.link && (
+        <a class="btn btn-accent" href={project.data.link} target="_blank" rel="noopener noreferrer">
+          {strings.viewProject}
+        </a>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .narrow {
+    max-width: 760px;
+  }
+  .back-eyebrow {
+    margin-bottom: var(--space-8);
+  }
+  .back-eyebrow::before {
+    display: none;
+  }
+  .back-eyebrow:hover {
+    color: var(--accent);
+  }
+  .proj-head {
+    margin-bottom: var(--space-8);
+  }
+  h1 {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: var(--space-4);
+  }
+  .standfirst {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin: 0 0 var(--space-4);
+  }
+  .meta {
+    display: flex;
+    gap: var(--space-4);
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    font-size: 0.95rem;
+  }
+  .meta .role {
+    color: var(--accent);
+  }
+  .preview {
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-12);
+    box-shadow: var(--shadow);
+  }
+  .prose {
+    font-size: 1.1rem;
+    line-height: 1.8;
+  }
+  .prose :global(h2) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-top: var(--space-12);
+    margin-bottom: var(--space-3);
+  }
+  .prose :global(p) {
+    margin-block: var(--space-6);
+  }
+  .btn-accent {
+    margin-top: var(--space-8);
+  }
+</style>
