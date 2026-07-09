@@ -8,7 +8,7 @@ views:                  # optional
 likes:                # optional
 media:
   type: upload                 # upload | youtube | tiktok | instagram
-  src: /media/videos/Sculpture.mp4   # your uploaded file (see §5)
+  src: https://github.com/lobstervsouse/lobstervsouse.github.io/releases/tag/videos/Sculpture.mp4   # your uploaded file (see §5)
   poster: /media/videos/Sculpture.jpg # optional cover image
   alt: A short description for accessibility
 ---

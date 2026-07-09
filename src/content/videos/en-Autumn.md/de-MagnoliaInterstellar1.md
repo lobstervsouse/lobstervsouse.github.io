@@ -8,7 +8,7 @@ views:                  # optional
 likes:                # optional
 media:
   type: upload                 # upload | youtube | tiktok | instagram
-  src: /media/videos/MagnoliaInterstellar.mp4   # your uploaded file (see §5)
+  src: https://github.com/lobstervsouse/lobstervsouse.github.io/releases/tag/videos/MagnoliaInterstellar.mp4   # your uploaded file (see §5)
   poster: /media/videos/MagnoliaInterstellar.jpg # optional cover image
   alt: A short description for accessibility
 ---
