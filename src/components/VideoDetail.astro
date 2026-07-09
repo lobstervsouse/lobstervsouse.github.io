@@ -31,7 +31,7 @@ const base = import.meta.env.BASE_URL;
       <PhoneMockup media={video.data.media} controls={true} />
     </div>
     <div class="detail-info" data-reveal style="--d:120ms">
-      <a href={localizedPath(base, lang, "videos")} class="eyebrow back-eyebrow" data-astro-prefetch>
+      <a href={localizedPath(base, lang, "videos")} class="eyebrow back-eyebrow" data-back>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
           <path d="M15 6l-6 6 6 6" />
         </svg>
@@ -61,6 +61,30 @@ const base = import.meta.env.BASE_URL;
     </div>
   </div>
 </section>
+
+<script>
+  // Make the "← Videos" link behave like the browser Back button when we
+  // actually came from within the site. Going back (instead of loading a fresh
+  // /videos page) lets the browser restore the list exactly as it was — the
+  // selected reel in the carousel and the active hashtag filter. If someone
+  // opened this video directly (no in-site history), the normal link runs.
+  function wireBack() {
+    document.querySelectorAll<HTMLAnchorElement>("a[data-back]").forEach((link) => {
+      if (link.dataset.backBound) return;
+      link.dataset.backBound = "1";
+      link.addEventListener("click", (event) => {
+        const ref = document.referrer;
+        const sameSite = ref && new URL(ref).origin === location.origin;
+        if (window.history.length > 1 && sameSite) {
+          event.preventDefault();
+          window.history.back();
+        }
+      });
+    });
+  }
+  wireBack();
+  document.addEventListener("astro:page-load", wireBack);
+</script>
 
 <style>
   .detail-grid {

@@ -26,7 +26,7 @@ const hasMedia = media && (media.src || media.url || media.poster);
   <div class="phone-screen">
     {
       hasMedia ? (
-        <Media media={media!} kind="video" controls={controls} />
+        <Media media={media!} kind={controls ? "video" : "poster"} controls={controls} />
       ) : (
         <PlaceholderScene hue={hue} />
       )
@@ -57,31 +57,20 @@ const hasMedia = media && (media.src || media.url || media.poster);
   .phone {
     position: relative;
     aspect-ratio: 9 / 19;
-    background: var(--phone-shell);
+    /* A thin gradient frame instead of a thick black bezel: the gradient is the
+       background and the 3px padding lets it show as a slim border around the
+       screen. */
+    background: var(--grad);
     border-radius: var(--radius-xl);
-    padding: 8px;
+    padding: 3px;
     box-shadow: var(--shadow);
     transition: box-shadow 0.4s var(--ease-out), transform 0.4s var(--ease-out);
-  }
-  /* a faint gradient hairline rim so the device edge catches light */
-  .phone::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: var(--grad-ring);
-    opacity: 0.35;
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
   }
   .phone-screen {
     position: relative;
     width: 100%;
     height: 100%;
-    border-radius: calc(var(--radius-xl) - 8px);
+    border-radius: calc(var(--radius-xl) - 3px);
     overflow: hidden;
   }
   .phone-screen :global(video),

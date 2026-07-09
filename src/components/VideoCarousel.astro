@@ -275,12 +275,37 @@ const base = import.meta.env.BASE_URL;
   }
 
   @media (max-width: 640px) {
+    /* On phones, float the arrows over the left/right edges so the preview can
+       use the full width instead of being squeezed into the middle. */
+    .carousel {
+      position: relative;
+      gap: 0;
+    }
+    .viewport {
+      width: 100%;
+    }
     .slide {
-      width: 62vw;
+      width: 74vw;
     }
     .arrow {
-      width: 46px;
-      height: 46px;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 44px;
+      height: 44px;
+      /* translucent so the phone behind stays visible */
+      background: color-mix(in srgb, var(--bg-elev) 78%, transparent);
+      backdrop-filter: blur(6px);
+    }
+    .arrow.prev {
+      left: 2px;
+    }
+    .arrow.next {
+      right: 2px;
+    }
+    .arrow:hover {
+      transform: translateY(-50%) scale(1.06);
     }
   }
 

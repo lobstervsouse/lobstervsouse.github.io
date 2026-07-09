@@ -26,7 +26,10 @@ interface MediaData {
 
 interface Props {
   media: MediaData;
-  kind?: "video" | "image";
+  // "poster" = a still preview image (the video's cover frame). Used for the
+  // carousel thumbnails, where a real <video> would letterbox its poster on
+  // iOS Safari and can't be tapped to play anyway.
+  kind?: "video" | "image" | "poster";
   /** autoplay/controls behaviour for uploaded videos */
   controls?: boolean;
   class?: string;
@@ -65,6 +68,18 @@ const ytId = type === "youtube" ? youtubeId() : undefined;
       playsinline
       preload="metadata"
       aria-label={media.alt}
+    />
+  )
+}
+
+{
+  kind === "poster" && (media.poster || media.src) && (
+    <img
+      class={className}
+      src={asset(media.poster ?? media.src)}
+      alt={media.alt ?? ""}
+      loading="lazy"
+      decoding="async"
     />
   )
 }
