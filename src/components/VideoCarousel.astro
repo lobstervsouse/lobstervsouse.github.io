@@ -84,6 +84,32 @@ const base = import.meta.env.BASE_URL;
     }
     let active = 0;
 
+    // Remember which reel the visitor opens so that returning from its detail
+    // page re-highlights it, instead of snapping back to the first one. We key
+    // off the slide's original data-index and only restore once (on the way
+    // back) — a deliberate fresh visit to /videos still starts at the first.
+    const RESTORE_KEY = "videoCarouselOpenIndex";
+    track.addEventListener("click", (e) => {
+      const slide = (e.target as HTMLElement).closest<HTMLElement>(".slide");
+      if (slide?.dataset.index != null) {
+        try {
+          sessionStorage.setItem(RESTORE_KEY, slide.dataset.index);
+        } catch {}
+      }
+    });
+
+    function restoreActive() {
+      let saved: string | null = null;
+      try {
+        saved = sessionStorage.getItem(RESTORE_KEY);
+        sessionStorage.removeItem(RESTORE_KEY);
+      } catch {}
+      if (saved == null) return;
+      const slides = visibleSlides();
+      const idx = slides.findIndex((s) => s.dataset.index === saved);
+      if (idx >= 0) active = idx;
+    }
+
     // Translate the track so the active slide's centre meets the viewport's
     // centre. offsetLeft is measured inside the track (position: relative) and
     // is unaffected by the transform, so this stays correct on every call.
@@ -173,7 +199,14 @@ const base = import.meta.env.BASE_URL;
       rt = window.setTimeout(center, 120);
     });
 
+    // Land on the previously-opened reel (if we're coming back) without an
+    // animated sweep across the strip — jump straight there, then re-enable the
+    // transition for subsequent arrow/swipe moves.
+    restoreActive();
+    track.style.transition = "none";
     render();
+    void track.offsetWidth; // force the jump to apply before restoring easing
+    track.style.transition = "";
     // One more pass after fonts/images settle so widths are final.
     window.setTimeout(center, 300);
   }
