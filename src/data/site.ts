@@ -12,12 +12,12 @@ export const site = {
 
   // ── CONTACT ────────────────────────────────────────────────────────────────
   // 1) Your public email (shown on the Contact page as a fallback).
-  email: "hello@dariaradiuk.com", // ← replace with the real address
+  email: "dararaduk1@gmail.com",
 
   // 2) Formspree form id. Create a free form at https://formspree.io and paste
   //    the part after "/f/" here. While it says YOUR_FORMSPREE_ID the form
   //    still looks/works but submissions won't be delivered.
-  formspreeId: "YOUR_FORMSPREE_ID", // ← replace, e.g. "xayzwqpb"
+  formspreeId: "xlgyqrnv",
 
   // ── SOCIAL LINKS ─────────────────────────────────────────────────────────────
   // Leave a URL empty ("") to hide that icon.
@@ -25,7 +25,7 @@ export const site = {
     instagram: "https://instagram.com/",
     tiktok: "https://tiktok.com/",
     youtube: "https://youtube.com/",
-    linkedin: "https://linkedin.com/",
+    linkedin: "https://linkedin.com/in/dariaradiuk",
   },
 
   // ── INTRO VIDEO ──────────────────────────────────────────────────────────────
