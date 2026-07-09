@@ -7,7 +7,7 @@ tags: ["Visual Effects"]  # the #hashtag filter chips
 
 media:
   type: upload                 # upload | youtube | tiktok | instagram
-  src: https://github.com/lobstervsouse/lobstervsouse.github.io/releases/download/videos/Dark.mp4   # your uploaded file (see §5)
+  src: https://videos.happytoday.it.com/Dark.mp4   # your uploaded file (see §5)
   poster: /media/videos/Dark.jpg # optional cover image
   alt: A short description for accessibility
 ---

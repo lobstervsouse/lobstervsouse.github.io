@@ -8,7 +8,7 @@ views: "" # optional
 likes: "" # optional
 media:
   type: upload                 # upload | youtube | tiktok | instagram
-  src: https://github.com/lobstervsouse/lobstervsouse.github.io/releases/download/videos/Mamoritai.mp4   # your uploaded file (see §5)
+  src: https://videos.happytoday.it.com/Mamoritai.mp4   # your uploaded file (see §5)
   poster: /media/videos/Mamoritai.jpg # optional cover image
   alt: A short description for accessibility
 ---

@@ -89,6 +89,17 @@ media:
   alt: A short description
 ```
 
+**Big videos that must play on phones:** put the file on a video host (see §5)
+and paste its full web address as `src`. Everything else stays the same:
+
+```markdown
+media:
+  type: upload
+  src: https://videos.dariaradiuk.com/my-reel.mp4   # a full https:// link
+  poster: /media/videos/my-reel.jpg                 # cover image can still be local
+  alt: A short description
+```
+
 ### Add a POST (02)
 
 Create `src/content/posts/en-something.md`:
@@ -197,13 +208,38 @@ Put media files in the **`public/media/`** folder. A file at
 The **intro video** (the "hi!" clip that plays only on someone's first visit):
 drop `public/media/intro.mp4`, or set a YouTube id in `src/data/site.ts`.
 
+### Big videos (too large for GitHub) — host them on a CDN
+
+GitHub can't store very large video files, and files put on GitHub "Releases"
+**refuse to play on iPhones** (Safari won't play them because of how GitHub
+serves the file). The fix is to keep large videos on a proper video host and
+link to them. Any of these work — pick one:
+
+- **Cloudflare R2** (recommended, has a generous free tier) — an object store
+  that can serve files on your own address, e.g. `videos.dariaradiuk.com`.
+- **Bunny.net** — a low-cost video/CDN service.
+
+Rough steps (one-time, for whoever is comfortable with a hosting dashboard):
+
+1. Create a Cloudflare R2 bucket (or a Bunny storage zone) and **enable public
+   access** / connect a custom domain like `videos.dariaradiuk.com`.
+2. Upload the `.mp4` files there.
+3. Copy each file's public link (it will look like
+   `https://videos.dariaradiuk.com/autumn.mp4`).
+4. In the video's content file, paste that link as `src` (see §3, "Big videos
+   that must play on phones"). Keep the small `poster:` image local under
+   `public/media/videos/` so covers load instantly.
+
+That's all the site needs — the player already knows how to play a full
+`https://` link. No code changes required to add more later.
+
 ---
 
 ## 6. Switching languages
 
-There's a **EN / DE** toggle in the top-right of every page. English pages live
-at the normal address; German pages live under `/de/`. The toggle keeps the
-visitor on the same page in the other language.
+There's a **DE / EN** toggle in the top-right of every page. German is the
+default: German pages live at the normal address; English pages live under
+`/en/`. The toggle keeps the visitor on the same page in the other language.
 
 ---
 
