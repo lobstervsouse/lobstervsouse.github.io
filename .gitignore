@@ -21,3 +21,4 @@ pnpm-debug.log*
 
 # local design reference (Canva exports)
 design-reference/
+**/LFS_FILES/*
