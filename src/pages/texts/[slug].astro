@@ -5,14 +5,14 @@ import BackHome from "../../components/BackHome.astro";
 import { byLang, readingTime, cleanSlug } from "../../lib/content";
 
 export async function getStaticPaths() {
-  const texts = await byLang("texts", "en");
+  const texts = await byLang("texts", "de");
   return texts.map((article) => ({
     params: { slug: cleanSlug(article.slug) },
     props: { article },
   }));
 }
 
-const lang = "en" as const;
+const lang = "de" as const;
 const { article } = Astro.props;
 const mins = readingTime(article.body, article.data.readingTimeOverride);
 const { Content } = await article.render();

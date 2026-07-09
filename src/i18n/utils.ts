@@ -6,18 +6,18 @@
 import type { Lang } from "../data/site";
 
 export const LOCALES: Lang[] = ["en", "de"];
-export const DEFAULT_LOCALE: Lang = "en";
+export const DEFAULT_LOCALE: Lang = "de";
 
 /** Figure out the current language from the URL pathname. */
 export function getLangFromUrl(url: URL): Lang {
   const [, maybeLang] = url.pathname.split("/");
-  if (maybeLang === "de") return "de";
-  return "en";
+  if (maybeLang === "en") return "en";
+  return "de";
 }
 
 /**
  * Build a path that respects the current language AND the deployment `base`.
- * English lives at the root (/videos), German under /de (/de/videos).
+ * German lives at the root (/videos), English under /en (/en/videos).
  *
  * Pass Astro's `import.meta.env.BASE_URL` as `base`.
  */
@@ -47,13 +47,13 @@ export function switchLangPath(url: URL, base: string, current?: Lang): string {
   let inner = url.pathname;
   if (cleanBase && inner.startsWith(cleanBase)) inner = inner.slice(cleanBase.length);
 
-  // Detect the German prefix by exact segment ("/de" or "/de/..."), so paths
-  // like "/design" are never mistaken for the "de" locale.
-  const isDe = inner === "/de" || inner.startsWith("/de/");
-  const cur: Lang = current ?? (isDe ? "de" : "en");
-  const target: Lang = cur === "en" ? "de" : "en";
+  // Detect the English prefix by exact segment ("/en" or "/en/..."), so paths
+  // like "/entry" are never mistaken for the "en" locale.
+  const isEn = inner === "/en" || inner.startsWith("/en/");
+  const cur: Lang = current ?? (isEn ? "en" : "de");
+  const target: Lang = cur === "de" ? "en" : "de";
 
-  if (isDe) inner = inner.slice(3); // drop the "/de" segment
+  if (isEn) inner = inner.slice(3); // drop the "/en" segment
   inner = inner.replace(/^\//, "").replace(/\/$/, "");
 
   return localizedPath(base, target, inner);

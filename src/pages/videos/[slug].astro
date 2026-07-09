@@ -5,14 +5,14 @@ import BackHome from "../../components/BackHome.astro";
 import { byLang, cleanSlug } from "../../lib/content";
 
 export async function getStaticPaths() {
-  const videos = await byLang("videos", "en");
+  const videos = await byLang("videos", "de");
   return videos.map((v) => ({
     params: { slug: cleanSlug(v.slug) },
     props: { video: v },
   }));
 }
 
-const lang = "en" as const;
+const lang = "de" as const;
 const { video } = Astro.props;
 ---
 

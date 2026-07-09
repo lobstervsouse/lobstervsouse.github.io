@@ -36,12 +36,12 @@ export default defineConfig({
   site: SITE,
   base: BASE,
   trailingSlash: "ignore",
-  // Bilingual setup. English is the default; German lives under /de/.
+  // Bilingual setup. German is the default; English lives under /en/.
   i18n: {
-    defaultLocale: "en",
+    defaultLocale: "de",
     locales: ["en", "de"],
     routing: {
-      prefixDefaultLocale: false, // English stays at the root, German at /de/
+      prefixDefaultLocale: false, // German stays at the root, English at /en/
     },
   },
   build: {

@@ -5,14 +5,14 @@ import BackHome from "../../components/BackHome.astro";
 import { byLang, cleanSlug } from "../../lib/content";
 
 export async function getStaticPaths() {
-  const projects = await byLang("projects", "en");
+  const projects = await byLang("projects", "de");
   return projects.map((p, i) => ({
     params: { slug: cleanSlug(p.slug) },
     props: { project: p, hue: (i * 67) % 360 },
   }));
 }
 
-const lang = "en" as const;
+const lang = "de" as const;
 const { project, hue } = Astro.props;
 const { Content } = await project.render();
 ---
