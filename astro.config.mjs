@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
+import sitemap from "@astrojs/sitemap";
 
 // ────────────────────────────────────────────────────────────────────────────
 // DEPLOYMENT CONFIG — EDIT THESE TWO LINES WHEN YOU DEPLOY
@@ -27,9 +28,9 @@ import { defineConfig } from "astro/config";
 // placeholders — replace USERNAME and REPO with your real values.
 // ────────────────────────────────────────────────────────────────────────────
 
-// This repo is a GitHub *user* page (lobstervsouse.github.io), so it is served
-// at the domain root — base is "/", not a "/REPO" sub-folder.
-const SITE = "https://lobstervsouse.github.io";
+// This site is served from the custom domain dariaradiuk.com (case C above).
+// It lives at the domain root, so base is "/", not a "/REPO" sub-folder.
+const SITE = "https://www.dariaradiuk.com";
 const BASE = "/";
 
 export default defineConfig({
@@ -44,6 +45,9 @@ export default defineConfig({
       prefixDefaultLocale: false, // German stays at the root, English at /en/
     },
   },
+  // Generates sitemap-index.xml + sitemap-0.xml at build time, listing every
+  // page so search engines can discover them. robots.txt points here.
+  integrations: [sitemap()],
   build: {
     // Keep clean, shareable URLs like /videos/ instead of /videos.html
     format: "directory",

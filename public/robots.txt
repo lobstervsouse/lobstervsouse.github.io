@@ -1,0 +1,7 @@
+# Allow all search engines to crawl the whole site.
+User-agent: *
+Allow: /
+
+# Sitemap location. If you move to a custom domain, update this URL to match
+# the `site` value in astro.config.mjs (e.g. https://your-domain/sitemap-index.xml).
+Sitemap: https://lobstervsouse.github.io/sitemap-index.xml

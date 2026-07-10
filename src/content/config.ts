@@ -12,7 +12,10 @@ import { defineCollection, z } from "astro:content";
 // knows which language a piece of content belongs to.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const lang = z.enum(["en", "de"]);
+// "en" or "de" makes an item appear in that one language. "all" makes ONE file
+// show up in BOTH languages — handy for videos where you don't want a separate
+// English/German copy (the text you write shows in both).
+const lang = z.enum(["en", "de", "all"]);
 
 // How a piece of media is delivered. "upload" = a file you uploaded into the
 // project. The others are social embeds we can wire up later (the data model is

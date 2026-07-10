@@ -65,7 +65,7 @@ Create `src/content/videos/en-something.md`:
 
 ```markdown
 ---
-lang: en                       # "en" or "de"
+lang: all                      # "en", "de", or "all" (see note below)
 title: My new reel
 description: One line about it.
 order: 1                       # lower = shows first in the carousel
@@ -79,6 +79,13 @@ media:
   alt: A short description for accessibility
 ---
 ```
+
+**One video in both languages:** set `lang: all` and the single file shows on
+BOTH the German and English pages (the title/description you write appear in
+both). Use `lang: de` or `lang: en` instead only when you want a *separately
+translated* version — then make two files (e.g. `de-my-reel.md` and
+`en-my-reel.md`) with the same fields but translated text. Don't do both for the
+same reel, or you'd get duplicates.
 
 To use a YouTube video instead of an uploaded file:
 

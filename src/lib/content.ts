@@ -12,7 +12,11 @@ export async function byLang<C extends AnyCollection>(
 ): Promise<CollectionEntry<C>[]> {
   const all = await getCollection(collection);
   return all
-    .filter((e) => (e.data as { lang: Lang }).lang === lang)
+    // Match the requested language, plus any "all" item (shown in both).
+    .filter((e) => {
+      const l = (e.data as { lang: Lang | "all" }).lang;
+      return l === lang || l === "all";
+    })
     .sort((a, b) => {
       const ao = (a.data as { order?: number }).order ?? 0;
       const bo = (b.data as { order?: number }).order ?? 0;
