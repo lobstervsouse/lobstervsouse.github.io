@@ -1,5 +1,5 @@
 ---
-lang: de                       # "en" or "de"
+lang: all                      # "en", "de", or "all" (both languages)
 title: Dresden im Licht
 description: Eine aestethische Aufnahme Dresdens mit Fokus auf Licht, Komposition und Atmosphäre.
 order: 4                    # lower = shows first in the carousel
@@ -8,7 +8,7 @@ views: "" # optional
 likes: "" # optional
 media:
   type: upload                 # upload | youtube | tiktok | instagram
-  src: https://videos.happytoday.it.com/Dresden.mp4   # your uploaded file (see §5)
+  src: https://videos.dariaradiuk.com/Dresden.mp4   # your uploaded file (see §5)
   poster: /media/videos/Dresden.jpg # optional cover image
-  alt: A short description for accessibility
+  alt: Ästhetische Aufnahme von Dresden im warmen Licht mit Blick auf Architektur und Atmosphäre.
 ---
