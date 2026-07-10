@@ -28,9 +28,9 @@ import sitemap from "@astrojs/sitemap";
 // placeholders — replace USERNAME and REPO with your real values.
 // ────────────────────────────────────────────────────────────────────────────
 
-// This site is served from the custom domain dariaradiuk.com (case C above).
-// It lives at the domain root, so base is "/", not a "/REPO" sub-folder.
-const SITE = "https://www.dariaradiuk.com";
+// This site is served from the custom subdomain portfolio.dariaradiuk.com
+// (case C above). It lives at the subdomain root, so base is "/".
+const SITE = "https://portfolio.dariaradiuk.com";
 const BASE = "/";
 
 export default defineConfig({
