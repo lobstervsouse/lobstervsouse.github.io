@@ -125,9 +125,11 @@ const posterAsset = intro.poster.startsWith("http")
     display: grid;
     place-items: center;
     padding: var(--space-6);
-    background: rgba(10, 10, 10, 0.78);
-    backdrop-filter: blur(6px);
-    animation: fade 0.4s ease;
+    /* A dark lightbox dim, faintly tinted by the current theme. */
+    background: color-mix(in srgb, var(--bg) 12%, rgba(6, 6, 8, 0.82));
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    animation: fade 0.4s ease both;
   }
   /* The `hidden` attribute must win over `display: grid` above (equal
      specificity would otherwise leave the overlay stuck on screen). */
@@ -145,7 +147,15 @@ const posterAsset = intro.poster.startsWith("http")
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     padding: var(--space-4);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
+    /* Materialize: the card scales and settles in rather than just fading. */
+    animation: introCardIn 0.55s var(--spring) both;
+  }
+  @keyframes introCardIn {
+    from {
+      opacity: 0;
+      transform: scale(0.94) translateY(10px);
+    }
   }
   .intro-video {
     aspect-ratio: 9 / 16;

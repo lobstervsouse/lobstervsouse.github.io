@@ -28,6 +28,8 @@ const unique = [...new Set(tags)];
       </button>
     ))
   }
+  <!-- Announces the active filter to screen readers when it changes. -->
+  <p class="sr-only filter-status" role="status" aria-live="polite"></p>
 </div>
 
 <script>
@@ -36,6 +38,7 @@ const unique = [...new Set(tags)];
     root.dataset.bound = "true";
     const target = root.getAttribute("data-target")!;
     const chips = Array.from(root.querySelectorAll<HTMLButtonElement>(".chip"));
+    const status = root.querySelector<HTMLElement>(".filter-status");
 
     chips.forEach((chip) => {
       chip.addEventListener("click", () => {
@@ -44,11 +47,17 @@ const unique = [...new Set(tags)];
           c.setAttribute("aria-pressed", String(c === chip)),
         );
         const items = document.querySelectorAll<HTMLElement>(target);
+        let shown = 0;
         items.forEach((item) => {
           const itemTags = (item.getAttribute("data-tags") || "").split(/\s+/);
           const show = tag === "*" || itemTags.includes(tag);
           item.style.display = show ? "" : "none";
+          if (show) shown++;
         });
+        // Tell screen-reader users what just changed.
+        if (status) {
+          status.textContent = `${chip.textContent!.trim()} · ${shown}`;
+        }
       });
     });
   }

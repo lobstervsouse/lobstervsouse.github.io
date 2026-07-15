@@ -39,9 +39,23 @@ const paragraphs = p.aboutBody.split(/\n\s*\n/).map((s) => s.trim()).filter(Bool
         <SocialLinks lang={lang} />
       </aside>
 
-      <div class="about-body" data-reveal style="--d:200ms">
-        {paragraphs.map((para) => <p>{para}</p>)}
-        <a class="btn btn-accent" href={localizedPath(base, lang, "contact")} data-astro-prefetch>
+      <div class="about-body">
+        {paragraphs.map((para, i) => (
+          <p
+            class:list={["about-para", { standfirst: i === 0 }]}
+            data-reveal
+            style={`--d:${180 + i * 60}ms`}
+          >
+            {para}
+          </p>
+        ))}
+        <a
+          class="btn btn-accent about-cta"
+          href={localizedPath(base, lang, "contact")}
+          data-reveal
+          style={`--d:${180 + paragraphs.length * 60}ms`}
+          data-astro-prefetch
+        >
           {strings.nav.contact}
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M5 12h14M13 6l6 6-6 6" />
@@ -103,6 +117,16 @@ const paragraphs = p.aboutBody.split(/\n\s*\n/).map((s) => s.trim()).filter(Bool
     line-height: 1.8;
     color: var(--text);
     max-width: 60ch;
+    text-wrap: pretty;
+  }
+  /* The opening paragraph reads as an editorial standfirst. */
+  .about-body .standfirst {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: var(--space-8);
   }
   .about-body .btn {
     margin-top: var(--space-2);

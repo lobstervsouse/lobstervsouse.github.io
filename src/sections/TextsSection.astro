@@ -67,15 +67,15 @@ const base = import.meta.env.BASE_URL;
   .text-card {
     position: relative;
     background: var(--bg-elev);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
+    border: 1px solid var(--mat-border);
+    border-radius: var(--radius-xl);
     padding: var(--space-8);
     min-height: 240px;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow);
-    transition: transform 0.4s var(--ease-out), border-color var(--transition),
-      box-shadow 0.4s var(--ease-out);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--dur-slow) var(--spring), border-color var(--transition),
+      box-shadow var(--dur-slow) var(--spring);
   }
   .text-card:hover {
     transform: translateY(-6px);
@@ -93,7 +93,7 @@ const base = import.meta.env.BASE_URL;
     font-weight: 600;
     font-size: 0.78rem;
     letter-spacing: 0.02em;
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .text-card h2 {
     font-family: var(--font-display);
@@ -102,14 +102,10 @@ const base = import.meta.env.BASE_URL;
     line-height: 1.15;
     letter-spacing: -0.01em;
     margin-bottom: var(--space-3);
-    transition: background-position 0.4s var(--ease-out);
+    transition: color var(--transition);
   }
   .text-card:hover h2 {
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    color: var(--accent-text);
   }
   .excerpt {
     color: var(--text-muted);
@@ -127,7 +123,7 @@ const base = import.meta.env.BASE_URL;
     transition: gap var(--transition), color var(--transition);
   }
   .text-card:hover .read-cue {
-    color: var(--accent);
+    color: var(--accent-text);
     gap: 0.7em;
   }
 </style>

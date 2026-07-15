@@ -42,13 +42,13 @@ const base = import.meta.env.BASE_URL;
       <div class="stats">
         {video.data.views && (
           <div class="stat">
-            <span class="stat-num grad-text">{video.data.views}</span>
+            <span class="stat-num">{video.data.views}</span>
             <span class="stat-label">{strings.views}</span>
           </div>
         )}
         {video.data.likes && (
           <div class="stat">
-            <span class="stat-num grad-text">{video.data.likes}</span>
+            <span class="stat-num">{video.data.likes}</span>
             <span class="stat-label">{strings.likes}</span>
           </div>
         )}
@@ -106,7 +106,7 @@ const base = import.meta.env.BASE_URL;
     display: none;
   }
   .back-eyebrow:hover {
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .detail-info h1 {
     font-family: var(--font-display);
@@ -137,6 +137,8 @@ const base = import.meta.env.BASE_URL;
     font-weight: 600;
     font-size: clamp(1.8rem, 3.5vw, 2.6rem);
     line-height: 1;
+    color: var(--accent-text);
+    font-variant-numeric: tabular-nums;
   }
   .stat-label {
     color: var(--text-muted);
@@ -157,17 +159,24 @@ const base = import.meta.env.BASE_URL;
     transition: border-color var(--transition), color var(--transition);
   }
   .tag:hover {
-    border-color: var(--accent);
+    border-color: var(--accent-text);
     color: var(--text);
   }
   .tag .hash {
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 700;
   }
   @media (max-width: 760px) {
     .detail-grid {
       grid-template-columns: 1fr;
       gap: var(--space-8);
+    }
+    /* On phones, size the reel by HEIGHT so the whole thing fits on screen
+       (like Instagram) instead of running off the bottom. We cap the width so
+       that at the 9:19 phone ratio the frame is never taller than ~68% of the
+       screen — the title then peeks in below it. */
+    .detail-phone {
+      max-width: min(340px, calc(68vh * 9 / 19));
     }
   }
 </style>

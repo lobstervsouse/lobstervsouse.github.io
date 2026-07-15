@@ -54,9 +54,9 @@ const items = navItems(lang);
   }
   li {
     opacity: 0;
-    transform: translateX(12px);
-    animation: navIn 0.5s var(--ease-out) forwards;
-    animation-delay: calc(var(--i) * 80ms + 250ms);
+    transform: translateX(14px);
+    animation: navIn 0.55s var(--spring) forwards;
+    animation-delay: calc(var(--i) * 60ms + 220ms);
   }
   @keyframes navIn {
     to {
@@ -78,10 +78,11 @@ const items = navItems(lang);
     gap: var(--space-4);
     padding: 0.18em 0 0.18em 0;
     color: var(--text);
-    transition: transform var(--transition);
+    transition: transform var(--dur) var(--spring), color var(--transition);
     position: relative;
   }
-  /* Gradient indicator tick that grows from the left on hover. */
+  /* Solid accent indicator tick that grows from the left on hover (the
+     gradient is rationed to the single Contact CTA). */
   .nav-link::before {
     content: "";
     position: absolute;
@@ -90,14 +91,14 @@ const items = navItems(lang);
     width: 4px;
     height: 0;
     border-radius: 4px;
-    background: var(--grad);
+    background: var(--accent);
     transform: translateY(-50%);
-    transition: height var(--transition);
+    transition: height var(--dur) var(--spring);
   }
   .label {
-    font-size: clamp(1.9rem, 4.4vw, 3rem);
-    line-height: 1.12;
-    transition: letter-spacing var(--transition), background-position 0.4s var(--ease-out);
+    font-size: clamp(1.5rem, 3.1vw, 2.2rem);
+    line-height: 1.14;
+    transition: color var(--transition);
   }
   .nav-link.sans .label {
     font-family: var(--font-sans);
@@ -109,10 +110,10 @@ const items = navItems(lang);
     font-weight: 600;
     color: var(--text-muted);
     letter-spacing: 0.18em;
-    transition: color var(--transition), transform var(--transition);
+    transition: color var(--transition), transform var(--dur) var(--spring);
   }
 
-  /* Hover: slide right, grow the tick, paint the label with the gradient. */
+  /* Hover: slide right, grow the tick, tint the label with the solid accent. */
   .nav-link:hover {
     transform: translateX(14px);
   }
@@ -120,14 +121,10 @@ const items = navItems(lang);
     height: 1.6em;
   }
   .nav-link:hover .label {
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    color: var(--accent-text);
   }
   .nav-link:hover .num {
-    color: var(--accent);
+    color: var(--accent-text);
     transform: translateY(-2px);
   }
   .nav-link:focus-visible {
@@ -154,7 +151,7 @@ const items = navItems(lang);
     color: #fff;
     align-self: center;
     box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--accent) 65%, transparent);
-    transition: transform var(--transition), box-shadow var(--transition);
+    transition: transform var(--dur) var(--spring), box-shadow var(--dur) var(--spring);
   }
   .nav-link.cta:hover .cta-dot {
     transform: translateX(6px) scale(1.06);

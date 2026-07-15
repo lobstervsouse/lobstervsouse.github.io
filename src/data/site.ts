@@ -32,7 +32,9 @@ export const site = {
   // The short "hi!" video that plays only on a visitor's FIRST visit.
   // Use an uploaded file (put it in /public/media/) or a YouTube id.
   introVideo: {
-    enabled: true,
+    // Temporarily OFF while Daria films the "hi!" video. Set this back to
+    // true once /public/media/intro.mp4 (or a YouTube id below) is ready.
+    enabled: false,
     type: "upload" as "upload" | "youtube",
     src: "/media/intro.mp4", // used when type === "upload"
     youtubeId: "", // used when type === "youtube"

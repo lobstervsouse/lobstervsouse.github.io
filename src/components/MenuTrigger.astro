@@ -40,15 +40,30 @@ const strings = t(lang);
     width: 100%;
     border-radius: 2px;
     background: currentColor;
-    transition: width var(--transition);
+    transform-origin: center;
+    transition: width var(--transition), transform var(--dur) var(--spring),
+      opacity var(--dur-fast) var(--ease-out);
   }
   .menu-trigger:hover {
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .menu-trigger:hover .bars span:nth-child(1) {
     width: 65%;
   }
   .menu-trigger:hover .bars span:nth-child(3) {
     width: 80%;
+  }
+  /* When the drawer is open, the three bars morph into an X. */
+  .menu-trigger[aria-expanded="true"] .bars span {
+    width: 100%;
+  }
+  .menu-trigger[aria-expanded="true"] .bars span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .menu-trigger[aria-expanded="true"] .bars span:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-trigger[aria-expanded="true"] .bars span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
   }
 </style>

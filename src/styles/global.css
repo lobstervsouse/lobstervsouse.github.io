@@ -4,16 +4,25 @@
    tokens. Colours, type and spacing all flow from the variables below.
    ────────────────────────────────────────────────────────────────────────── */
 
-/* Fonts: Playfair Display (elegant serif) + Inter (geometric sans).
-   Loaded from Google Fonts in BaseLayout with preconnect for speed. */
+/* Fonts: Newsreader (editorial display serif, real italics) + Hanken Grotesk
+   (warm geometric sans). Loaded from Google Fonts in BaseLayout with preconnect
+   for speed. To change the whole site's type, edit the three --font-* values. */
 
 :root {
   /* ── Brand identity: an Instagram-style gradient (purple → pink → amber).
-        `--accent` is the single solid pink that lives inside the gradient, used
-        wherever a flat colour is needed (focus rings, hovers, small marks). ── */
+        `--accent` is the single solid pink that lives inside the gradient. The
+        gradient is reserved for a few *signature* moments (the story-ring, the
+        hero accent word, the one primary button); everywhere else uses the flat
+        `--accent` so the page stays calm instead of rainbow-y. ── */
   --accent: #e1306c;
   --accent-strong: #c41f59;
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
   --accent-contrast: #ffffff;
+  /* `--accent-text` is the accent used for *small* text/links. The bright pink
+     clears WCAG-AA on the dark canvas, but not on the light warm-paper bg, so
+     the light theme overrides this with the darker strong pink. Large/display
+     accents and the gradient keep using --accent. */
+  --accent-text: var(--accent);
 
   /* The signature gradient + variants. */
   --grad: linear-gradient(115deg, #8a3ab9 0%, #e1306c 48%, #f7a45c 100%);
@@ -21,9 +30,9 @@
   --grad-ring: conic-gradient(from 210deg, #f7a45c, #e1306c, #8a3ab9, #4f5bd5, #f7a45c);
 
   /* ── Type ── */
-  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
-  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* ── Spacing scale ── */
   --space-1: 0.25rem;
@@ -36,53 +45,99 @@
   --space-16: 4rem;
   --space-24: 6rem;
 
+  /* One radius scale, used consistently (shape-lock). */
   --radius: 14px;
   --radius-lg: 22px;
   --radius-xl: 30px;
   --maxw: 1180px;
 
+  /* ── Motion ── Springs give the site an Apple-like "physical" feel: motion
+     that settles naturally instead of stopping dead. `--spring` is the snappy,
+     no-overshoot default; `--spring-soft` adds a little playful overshoot. */
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring-soft: cubic-bezier(0.34, 1.28, 0.64, 1);
+  /* The "fluid" curve (heavy mass, long glide) used for premium reveals + glass. */
+  --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 0.18s;
+  --dur: 0.32s;
+  --dur-slow: 0.5s;
+  --dur-reveal: 0.9s;
+
+  /* ── Translucent material (frosted glass) for floating chrome: header, menu,
+     intro. Falls back to solid under reduced-transparency / high-contrast. ── */
+  --mat-blur: blur(20px) saturate(180%);
 }
 
 /* ── DARK THEME (default) — a deep, layered near-black canvas ── */
 :root,
 :root[data-theme="dark"] {
-  --bg: #0c0c0e;
-  --bg-elev: #161619;
-  --bg-elev-2: #202024;
+  --bg: #08080a;
+  --bg-elev: #131316;
+  --bg-elev-2: #1e1e22;
   --text: #f3efe9;
-  --text-muted: #9b968f;
+  --text-muted: #a29d95;
   --line: #2a2a2f;
   --line-strong: #3a3a41;
-  --shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  /* Layered elevation, tinted to the canvas (never pure black). The inset
+     top-highlight gives cards a machined, glass-edge feel (Ethereal Glass). */
+  --shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 10px -3px rgba(0, 0, 0, 0.6);
+  --shadow-md: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 56px -24px rgba(0, 0, 0, 0.82);
+  --shadow-lg: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 48px 100px -30px rgba(0, 0, 0, 0.88);
+  --shadow: var(--shadow-md); /* alias kept for existing references */
   --glow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
     0 14px 40px -12px color-mix(in srgb, var(--accent) 45%, transparent);
   --phone-shell: #08080a;
-  --atmos-1: color-mix(in srgb, #8a3ab9 18%, transparent);
-  --atmos-2: color-mix(in srgb, #e1306c 15%, transparent);
+  --atmos-1: color-mix(in srgb, #8a3ab9 26%, transparent);
+  --atmos-2: color-mix(in srgb, #e1306c 22%, transparent);
   --card-veil: rgba(255, 255, 255, 0.015);
+  --mat-bg: color-mix(in srgb, var(--bg) 68%, transparent);
+  --mat-border: color-mix(in srgb, #ffffff 9%, transparent);
+  --scrim: color-mix(in srgb, #050506 62%, transparent);
   color-scheme: dark;
 }
 
-/* ── LIGHT / DAY THEME ── */
+/* ── LIGHT / DAY THEME — a first-class warm-paper mode (not an afterthought).
+   Surfaces and text are tuned for WCAG-AA contrast to match the dark theme. ── */
 :root[data-theme="light"] {
-  --bg: #f7f4ef;
+  --bg: #f6f2ec;
   --bg-elev: #ffffff;
-  --bg-elev-2: #f1ece4;
-  --text: #1c1a17;
-  --text-muted: #6a655d;
-  --line: #e6e0d6;
-  --line-strong: #d8d0c2;
-  --shadow: 0 24px 60px -28px rgba(60, 50, 40, 0.3);
+  --bg-elev-2: #efe9e0;
+  --text: #1b1915;
+  --text-muted: #5c564d; /* darkened for AA on the warm-paper bg */
+  --accent-text: #b81e53; /* darker pink — clears AA for small text on cream */
+  --line: #e3ddd2;
+  --line-strong: #d3cabb;
+  --shadow-sm: 0 2px 8px -3px rgba(60, 50, 40, 0.16);
+  --shadow-md: 0 22px 52px -26px rgba(60, 50, 40, 0.3);
+  --shadow-lg: 0 46px 96px -34px rgba(60, 50, 40, 0.36);
+  --shadow: var(--shadow-md);
   --glow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
-    0 14px 40px -14px color-mix(in srgb, var(--accent) 35%, transparent);
+    0 14px 40px -14px color-mix(in srgb, var(--accent) 32%, transparent);
   --phone-shell: #161616;
   --accent-contrast: #ffffff;
-  --atmos-1: color-mix(in srgb, #8a3ab9 12%, transparent);
-  --atmos-2: color-mix(in srgb, #f7a45c 16%, transparent);
+  --atmos-1: color-mix(in srgb, #8a3ab9 10%, transparent);
+  --atmos-2: color-mix(in srgb, #f7a45c 14%, transparent);
   --card-veil: rgba(20, 16, 12, 0.015);
+  --mat-bg: color-mix(in srgb, var(--bg) 70%, transparent);
+  --mat-border: color-mix(in srgb, #ffffff 55%, transparent);
+  --scrim: color-mix(in srgb, #2a2622 34%, transparent);
   color-scheme: light;
+}
+
+/* Frosted-glass surfaces degrade to solid when the user asks for less
+   transparency, or wants higher contrast (Apple-style accessibility). */
+@media (prefers-reduced-transparency: reduce) {
+  :root { --mat-bg: var(--bg); --mat-blur: none; }
+}
+@media (prefers-contrast: more) {
+  :root {
+    --mat-bg: var(--bg);
+    --mat-blur: none;
+    --line: var(--line-strong);
+    --text-muted: var(--text);
+  }
 }
 
 /* ── Reset / base ── */
@@ -103,8 +158,10 @@ body {
   font-family: var(--font-sans);
   font-size: 17px;
   line-height: 1.6;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
   min-height: 100vh;
   position: relative;
 }
@@ -127,8 +184,9 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(1000px 680px at 8% -8%, var(--atmos-1), transparent 60%),
-    radial-gradient(820px 560px at 102% 2%, var(--atmos-2), transparent 58%);
+    radial-gradient(1100px 760px at 6% -10%, var(--atmos-1), transparent 60%),
+    radial-gradient(900px 620px at 104% 4%, var(--atmos-2), transparent 58%),
+    radial-gradient(760px 760px at 88% 108%, var(--atmos-1), transparent 62%);
 }
 /* A whisper of film grain to kill banding and add a premium, tactile feel. */
 body::after {
@@ -145,6 +203,11 @@ h1, h2, h3, h4 {
   line-height: 1.1;
   font-weight: 600;
   margin: 0;
+  /* Apple type discipline: large text wants tighter tracking; balance the
+     line breaks so headings never leave a lonely word on the last line. */
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  font-optical-sizing: auto;
 }
 
 a {
@@ -162,6 +225,16 @@ button {
   cursor: pointer;
 }
 
+/* Top-of-page marker watched by the header's scroll-edge observer. */
+.scroll-sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
 /* ── Layout helpers ── */
 .container {
   width: 100%;
@@ -171,7 +244,8 @@ button {
 }
 
 .section {
-  padding-block: var(--space-16);
+  /* Heavy, agency-grade breathing room that scales with the viewport. */
+  padding-block: clamp(4rem, 9vw, 8.5rem);
 }
 
 /* Editorial section header (Instagram-native system): a gradient eyebrow label,
@@ -228,6 +302,7 @@ button {
   font-size: 1.05rem;
   line-height: 1.7;
   max-width: 52ch;
+  text-wrap: pretty;
 }
 .section-head.center .lede {
   margin-inline: auto;
@@ -251,12 +326,18 @@ button {
   color: var(--text);
   font-weight: 500;
   letter-spacing: 0.01em;
-  transition: transform var(--transition), background var(--transition),
-    border-color var(--transition);
+  transition: transform var(--dur) var(--spring), background var(--transition),
+    border-color var(--transition), box-shadow var(--dur) var(--spring);
 }
 .btn:hover {
   transform: translateY(-2px);
   border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+/* Tactile press: the button gives, like a physical key. */
+.btn:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: var(--dur-fast);
 }
 .btn-accent {
   background: var(--grad);
@@ -272,6 +353,48 @@ button {
   background-position: 100% 50%;
   border-color: transparent;
   box-shadow: 0 16px 38px -10px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+/* Button-in-button: the trailing arrow rides in its own translucent circular
+   chip and shifts diagonally on hover for internal kinetic tension. */
+.btn-accent svg {
+  box-sizing: content-box;
+  padding: 0.32em;
+  margin-left: 0.15em;
+  margin-right: -0.35em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  transition: transform var(--dur) var(--spring), background var(--transition);
+}
+.btn-accent:hover svg {
+  transform: translate(2px, -1px) scale(1.05);
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ── Tool chips (header lang/theme toggles, menu trigger, menu close). Global
+   so every component that uses `.tool` gets the same glassy pill — Astro scopes
+   component styles, so this MUST live here, not inside a single component. ── */
+.tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--mat-border);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
+  transition: transform var(--dur) var(--spring), border-color var(--transition),
+    color var(--transition), background var(--transition),
+    box-shadow var(--dur) var(--spring);
+}
+.tool:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-text);
+  background: color-mix(in srgb, var(--text) 11%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+.tool:active {
+  transform: translateY(0) scale(0.94);
+  transition-duration: var(--dur-fast);
 }
 
 /* ── Hashtag filter chips ── */
@@ -295,15 +418,23 @@ button {
 }
 .chip .hash {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-text);
+}
+.chip {
+  transition: color var(--transition), border-color var(--transition),
+    background var(--transition), transform var(--dur-fast) var(--spring);
 }
 .chip:hover {
   color: var(--text);
   border-color: var(--accent);
 }
+.chip:active {
+  transform: scale(0.95);
+}
+/* Active filter uses the SOLID accent (gradient is rationed to signatures). */
 .chip[aria-pressed="true"] {
-  background: var(--grad);
-  color: #fff;
+  background: var(--accent);
+  color: var(--accent-contrast);
   border-color: transparent;
   box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--accent) 60%, transparent);
 }
@@ -316,22 +447,6 @@ button {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 4px;
-}
-
-.skip-link {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translate(-50%, -120%);
-  background: var(--accent);
-  color: var(--accent-contrast);
-  padding: 0.6em 1.2em;
-  border-radius: 0 0 var(--radius) var(--radius);
-  z-index: 1000;
-  transition: transform var(--transition);
-}
-.skip-link:focus {
-  transform: translate(-50%, 0);
 }
 
 .sr-only {
@@ -365,12 +480,20 @@ button {
   }
 }
 
-/* ── View Transitions: a soft cross-fade + lift between pages ── */
+/* ── View Transitions: a soft cross-fade + gentle scale between pages, so
+   navigating feels like content settling into place rather than a hard cut. ── */
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root),
+  ::view-transition-old(root) {
+    animation: vt-out 0.32s var(--ease-out) both;
+  }
   ::view-transition-new(root) {
-    animation-duration: 0.4s;
-    animation-timing-function: var(--ease-out);
+    animation: vt-in 0.42s var(--spring) both;
+  }
+  @keyframes vt-out {
+    to { opacity: 0; transform: scale(0.992); }
+  }
+  @keyframes vt-in {
+    from { opacity: 0; transform: scale(0.986); }
   }
 }
 
@@ -420,23 +543,32 @@ button {
   }
 }
 
-/* Eyebrow label — small, tracked, muted; pairs with big editorial headings. */
+/* Eyebrow — a microscopic pill badge that sits above big editorial headings
+   (high-end "eyebrow tag" pattern): hairline border, faint glass fill, a small
+   glowing accent dot, wide-tracked micro-caps. */
 .eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.6em;
-  font-size: 0.78rem;
+  padding: 0.45em 0.9em 0.45em 0.75em;
+  border-radius: 999px;
+  border: 1px solid var(--mat-border);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  -webkit-backdrop-filter: var(--mat-blur);
+  backdrop-filter: var(--mat-blur);
+  font-size: 0.66rem;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--accent-text);
 }
 .eyebrow::before {
   content: "";
-  width: 1.8em;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--grad);
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 /* Media card — the shared tactile, Instagram-alive card treatment used by the
@@ -447,12 +579,12 @@ button {
   display: flex;
   flex-direction: column;
   background: var(--bg-elev);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--mat-border);
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: transform 0.4s var(--ease-out), border-color var(--transition),
-    box-shadow 0.4s var(--ease-out);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--dur-slow) var(--spring), border-color var(--transition),
+    box-shadow var(--dur-slow) var(--spring);
 }
 .media-card:hover,
 .media-card:focus-within {
@@ -505,13 +637,19 @@ button {
 @media (prefers-reduced-motion: no-preference) {
   [data-reveal] {
     opacity: 0;
-    transform: translateY(22px);
-    transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+    /* Cinematic entry: elements rise from further down and resolve out of a
+       soft blur, on the heavy "fluid" curve. */
+    transform: translateY(38px);
+    filter: blur(10px);
+    transition: opacity var(--dur-reveal) var(--ease-fluid),
+      transform var(--dur-reveal) var(--ease-fluid),
+      filter var(--dur-reveal) var(--ease-fluid);
     transition-delay: var(--d, 0ms);
-    will-change: opacity, transform;
+    will-change: opacity, transform, filter;
   }
   [data-reveal].is-in {
     opacity: 1;
     transform: none;
+    filter: none;
   }
 }

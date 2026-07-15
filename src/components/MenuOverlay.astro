@@ -99,16 +99,18 @@ const homeHref = localizedPath(base, lang, "");
 
 <style>
   /* ── Overlay = scrim + right-hand drawer ── */
+  /* A screen-filling glass overlay (heavy blur), not a small drawer. */
   .menu-overlay {
     position: fixed;
     inset: 0;
     z-index: 120;
-    background: rgba(6, 6, 8, 0.5);
-    backdrop-filter: blur(4px);
+    background: color-mix(in srgb, var(--bg) 76%, transparent);
+    -webkit-backdrop-filter: blur(30px) saturate(160%);
+    backdrop-filter: blur(30px) saturate(160%);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.35s var(--ease-out), visibility 0.35s var(--ease-out);
+    transition: opacity 0.5s var(--ease-fluid), visibility 0.5s var(--ease-fluid);
   }
   .menu-overlay.is-open {
     opacity: 1;
@@ -119,25 +121,27 @@ const homeHref = localizedPath(base, lang, "");
   .menu-panel {
     position: absolute;
     top: 0;
+    bottom: 0;
+    left: 0;
     right: 0;
-    height: 100%;
-    width: min(400px, 86vw);
+    margin-inline: auto;
+    width: min(var(--maxw), 100%);
     display: flex;
     flex-direction: column;
-    gap: var(--space-8);
-    padding: var(--space-6) var(--space-8);
-    background: var(--bg-elev);
-    border-left: 1px solid var(--line);
-    box-shadow: -40px 0 80px -28px rgba(0, 0, 0, 0.55);
+    justify-content: center;
+    gap: clamp(2rem, 8vh, 5rem);
+    padding: clamp(1.5rem, 6vh, 4rem) var(--space-8);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
     overflow-y: auto;
-    transform: translateX(100%);
-    transition: transform 0.42s var(--ease-out);
-  }
-  .menu-overlay.is-open .menu-panel {
-    transform: none;
   }
 
   .menu-top {
+    position: absolute;
+    top: clamp(1.5rem, 6vh, 4rem);
+    left: var(--space-8);
+    right: var(--space-8);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -153,8 +157,8 @@ const homeHref = localizedPath(base, lang, "");
     width: 40px;
   }
   .menu-close:hover {
-    color: var(--accent);
-    border-color: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent-text);
   }
 
   .menu-nav ul {
@@ -167,16 +171,19 @@ const homeHref = localizedPath(base, lang, "");
   }
   .menu-nav li {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translateY(28px);
+    filter: blur(6px);
   }
+  /* Staggered mask reveal — each link rises out of a soft blur in sequence. */
   .menu-overlay.is-open .menu-nav li {
-    animation: mIn 0.4s var(--ease-out) forwards;
-    animation-delay: calc(var(--i) * 45ms + 120ms);
+    animation: mIn 0.6s var(--ease-fluid) forwards;
+    animation-delay: calc(var(--i) * 55ms + 140ms);
   }
   @keyframes mIn {
     to {
       opacity: 1;
       transform: none;
+      filter: none;
     }
   }
 
@@ -185,11 +192,11 @@ const homeHref = localizedPath(base, lang, "");
     align-items: baseline;
     gap: var(--space-3);
     padding: 0.18em 0;
-    transition: transform var(--transition);
+    transition: transform var(--dur) var(--spring), color var(--transition);
   }
   .m-label {
-    font-size: clamp(1.6rem, 5vw, 2.1rem);
-    line-height: 1.15;
+    font-size: clamp(2.4rem, 7vw, 4rem);
+    line-height: 1.05;
     font-weight: 500;
   }
   .m-link.sans .m-label {
@@ -206,9 +213,10 @@ const homeHref = localizedPath(base, lang, "");
     transition: color var(--transition);
   }
   .m-link:hover {
-    transform: translateX(6px);
+    transform: translateX(8px);
+    color: var(--accent-text);
   }
-  .m-link:hover .m-label,
+  /* Only the single Contact CTA carries the signature gradient (rationed). */
   .m-link.cta .m-label {
     background: var(--grad);
     -webkit-background-clip: text;
@@ -217,7 +225,7 @@ const homeHref = localizedPath(base, lang, "");
     -webkit-text-fill-color: transparent;
   }
   .m-link:hover .m-num {
-    color: var(--accent);
+    color: var(--accent-text);
   }
 
   @media (prefers-reduced-motion: reduce) {

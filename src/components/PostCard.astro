@@ -90,12 +90,12 @@ const hasMedia = media && (media.src || media.url || media.poster);
   .post {
     background: #ffffff;
     color: #1a1a1a;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-md);
     display: flex;
     flex-direction: column;
-    transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+    transition: transform var(--dur-slow) var(--spring), box-shadow var(--dur-slow) var(--spring);
   }
   /* Card-in-grid: lift + glow on hover (the link wrapper handles cursor). */
   .post.card:hover {

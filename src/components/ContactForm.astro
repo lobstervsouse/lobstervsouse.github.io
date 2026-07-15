@@ -61,14 +61,25 @@ const action = `https://formspree.io/f/${site.formspreeId}`;
     const submit = document.getElementById("contact-submit");
     const configured = form.getAttribute("data-configured") === "true";
 
+    // Show an error WITHOUT navigating away — the visitor keeps their typed
+    // message and gets a one-tap email link as a fallback.
+    function showError() {
+      const link =
+        '<a class="mail-fallback" href="mailto:' + email + '">' + email + "</a>";
+      status.innerHTML = error + " " + link;
+      status.className = "form-status err";
+      // Restart the little shake each time.
+      status.style.animation = "none";
+      void status.offsetWidth;
+      status.style.animation = "";
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       if (!configured) {
         // Not set up yet → guide the owner/visitor to email instead.
-        status.textContent = error + " (" + email + ")";
-        status.className = "form-status err";
-        window.location.href = "mailto:" + email;
+        showError();
         return;
       }
 
@@ -92,8 +103,7 @@ const action = `https://formspree.io/f/${site.formspreeId}`;
           throw new Error("bad response");
         }
       } catch (err) {
-        status.textContent = error + " (" + email + ")";
-        status.className = "form-status err";
+        showError();
       } finally {
         submit.disabled = false;
         submit.textContent = original;
@@ -126,13 +136,24 @@ const action = `https://formspree.io/f/${site.formspreeId}`;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 0.8em 1em;
-    transition: border-color var(--transition);
+    transition: border-color var(--transition), box-shadow var(--dur) var(--ease-out);
     resize: vertical;
   }
+  /* A soft focus halo, the way native controls light up when you tab in. */
   input:focus,
   textarea:focus {
-    border-color: var(--accent);
+    border-color: var(--accent-text);
+    box-shadow: 0 0 0 3px var(--accent-soft);
     outline: none;
+  }
+  /* Only flag a field once the visitor has actually interacted with it. */
+  input:user-invalid,
+  textarea:user-invalid {
+    border-color: var(--accent-strong);
+  }
+  input:user-invalid:focus,
+  textarea:user-invalid:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-strong) 22%, transparent);
   }
   .gotcha {
     position: absolute;
@@ -147,11 +168,49 @@ const action = `https://formspree.io/f/${site.formspreeId}`;
     margin: 0;
     font-size: 0.95rem;
     min-height: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
   }
+  /* Success: a check settles in beside the message. */
   .form-status.ok {
-    color: #4caf72;
+    color: #2f9e63;
   }
+  .form-status.ok::before {
+    content: "";
+    width: 1.1em;
+    height: 1.1em;
+    border-radius: 999px;
+    background: #2f9e63;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 12l5 5 9-11'/%3E%3C/svg%3E") center / 72% no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 12l5 5 9-11'/%3E%3C/svg%3E") center / 72% no-repeat;
+    flex: 0 0 auto;
+    animation: checkPop 0.45s var(--spring-soft) both;
+  }
+  @keyframes checkPop {
+    from { transform: scale(0); opacity: 0; }
+  }
+  /* Error: the message shakes once to draw the eye, then rests. */
   .form-status.err {
     color: var(--accent-strong);
+    animation: shake 0.4s var(--ease-out);
+  }
+  .form-status .mail-fallback {
+    color: var(--accent-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .form-status.err,
+    .form-status.ok::before {
+      animation: none;
+    }
   }
 </style>

@@ -67,6 +67,12 @@ const base = import.meta.env.BASE_URL;
 </div>
 
 <script>
+  // A fluid, Apple-style coverflow: the track follows your finger 1:1, carries
+  // your release velocity into a spring, projects momentum to decide where to
+  // land (a flick throws it several reels), rubber-bands at the ends, and is
+  // interruptible — grab it mid-glide and it comes with you. Arrows, keyboard,
+  // hashtag filtering and the "return to the reel you opened" memory all still
+  // work, and everything collapses to plain instant jumps under reduced-motion.
   function setupCarousel() {
     const root = document.getElementById("video-carousel");
     if (!root || (root as HTMLElement).dataset.bound) return;
@@ -76,18 +82,235 @@ const base = import.meta.env.BASE_URL;
     const track = root.querySelector<HTMLElement>(".track")!;
     const prev = root.querySelector<HTMLButtonElement>(".prev")!;
     const next = root.querySelector<HTMLButtonElement>(".next")!;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    function visibleSlides() {
-      return Array.from(track.querySelectorAll<HTMLElement>(".slide")).filter(
+    const visibleSlides = () =>
+      Array.from(track.querySelectorAll<HTMLElement>(".slide")).filter(
         (s) => s.style.display !== "none",
       );
-    }
-    let active = 0;
 
-    // Remember which reel the visitor opens so that returning from its detail
-    // page re-highlights it, instead of snapping back to the first one. We key
-    // off the slide's original data-index and only restore once (on the way
-    // back) — a deliberate fresh visit to /videos still starts at the first.
+    let active = 0;
+    let pos = 0; // current track translateX (px)
+    let target = 0; // spring target (px)
+    let vel = 0; // velocity (px/s), carried between gesture and spring
+    let raf = 0;
+    let dragging = false;
+
+    // ── Geometry. offsetLeft is measured inside the track (position: relative)
+    // and is unaffected by the transform, so it stays correct on every call. ──
+    const vpCenter = () => viewport.clientWidth / 2;
+    const slideCenter = (el: HTMLElement) => el.offsetLeft + el.offsetWidth / 2;
+    const centerFor = (el: HTMLElement) => vpCenter() - slideCenter(el);
+    function bounds() {
+      const s = visibleSlides();
+      if (!s.length) return { min: 0, max: 0 };
+      return { max: centerFor(s[0]), min: centerFor(s[s.length - 1]) };
+    }
+    function step() {
+      const s = visibleSlides();
+      if (s.length < 2) return viewport.clientWidth || 1;
+      return Math.abs(slideCenter(s[1]) - slideCenter(s[0])) || 1;
+    }
+    function nearestIndex(atPos: number) {
+      const s = visibleSlides();
+      let best = 0,
+        bestD = Infinity;
+      s.forEach((el, i) => {
+        const d = Math.abs(slideCenter(el) + atPos - vpCenter());
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      });
+      return best;
+    }
+
+    // Paint the coverflow depth (scale/opacity via --dist) + active state from
+    // the CURRENT position, so neighbours grow and dim continuously as you drag.
+    function paint() {
+      const slides = visibleSlides();
+      if (!slides.length) return;
+      const s = step();
+      active = nearestIndex(pos);
+      slides.forEach((el, i) => {
+        const dpx = slideCenter(el) + pos - vpCenter();
+        const dist = Math.min(4, Math.abs(dpx) / s);
+        el.style.setProperty("--dist", dist.toFixed(3));
+        const isA = i === active;
+        el.classList.toggle("is-active", isA);
+        el.setAttribute("aria-current", isA ? "true" : "false");
+        el.tabIndex = isA ? 0 : -1;
+      });
+      track.style.transform = `translate3d(${pos}px,0,0)`;
+    }
+
+    // ── Interruptible spring (critically-damped feel, carries velocity). ──
+    function stopRaf() {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+    function spring() {
+      const stiffness = 168,
+        damping = 26;
+      let last = performance.now();
+      function frame(now: number) {
+        let dt = (now - last) / 1000;
+        last = now;
+        if (dt > 0.05) dt = 0.05; // clamp tab-switch gaps
+        const a = -stiffness * (pos - target) - damping * vel;
+        vel += a * dt;
+        pos += vel * dt;
+        paint();
+        if (Math.abs(pos - target) < 0.5 && Math.abs(vel) < 6) {
+          pos = target;
+          vel = 0;
+          paint();
+          raf = 0;
+          return;
+        }
+        raf = requestAnimationFrame(frame);
+      }
+      stopRaf();
+      raf = requestAnimationFrame(frame);
+    }
+
+    // Animate to an index, optionally handing off a release velocity.
+    function animateTo(idx: number, initialVel = 0) {
+      const slides = visibleSlides();
+      if (!slides.length) return;
+      active = Math.max(0, Math.min(idx, slides.length - 1));
+      target = centerFor(slides[active]);
+      if (reduce) {
+        stopRaf();
+        pos = target;
+        vel = 0;
+        paint();
+        return;
+      }
+      vel = initialVel;
+      spring();
+    }
+
+    // Instant jump (filter change, resize, first paint) — no sweep.
+    function snapTo(idx: number) {
+      const slides = visibleSlides();
+      if (!slides.length) return;
+      stopRaf();
+      active = Math.max(0, Math.min(idx, slides.length - 1));
+      target = centerFor(slides[active]);
+      pos = target;
+      vel = 0;
+      paint();
+    }
+
+    function go(delta: number) {
+      const slides = visibleSlides();
+      if (!slides.length) return;
+      animateTo((active + delta + slides.length) % slides.length);
+    }
+
+    prev.addEventListener("click", () => go(-1));
+    next.addEventListener("click", () => go(1));
+    root.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        go(-1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        go(1);
+      }
+    });
+
+    // ── 1:1 pointer drag with velocity tracking, rubber-band, and momentum. ──
+    // A *tap* must still open the reel, so we do NOT capture the pointer or move
+    // the track until the finger has actually travelled past the drag threshold.
+    // (Capturing on pointerdown would swallow the click and links would go dead.)
+    let startX = 0,
+      startPos = 0,
+      moved = false,
+      pointerId = -1;
+    let history: { x: number; t: number }[] = [];
+
+    function onDown(e: PointerEvent) {
+      if (reduce || (e.button != null && e.button !== 0)) return;
+      dragging = true;
+      moved = false;
+      pointerId = e.pointerId;
+      stopRaf();
+      vel = 0;
+      startX = e.clientX;
+      startPos = pos;
+      history = [{ x: e.clientX, t: performance.now() }];
+    }
+    function onMove(e: PointerEvent) {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      // Below the threshold it's still potentially a tap — leave the track be.
+      if (!moved) {
+        if (Math.abs(dx) <= 6) return;
+        moved = true;
+        root.classList.add("is-dragging");
+        try {
+          viewport.setPointerCapture(pointerId);
+        } catch {}
+      }
+      let np = startPos + dx;
+      const { min, max } = bounds();
+      // Progressive resistance past the ends (rubber-banding).
+      if (np > max) np = max + (np - max) * 0.35;
+      else if (np < min) np = min + (np - min) * 0.35;
+      pos = np;
+      history.push({ x: e.clientX, t: performance.now() });
+      if (history.length > 6) history.shift();
+      paint();
+    }
+    function onUp() {
+      if (!dragging) return;
+      dragging = false;
+      root.classList.remove("is-dragging");
+      try {
+        if (pointerId >= 0) viewport.releasePointerCapture(pointerId);
+      } catch {}
+      pointerId = -1;
+      // A tap (no drag) navigates via the link — don't fight it with a spring.
+      if (!moved) return;
+      // Release velocity (px/s) from the recent pointer history.
+      let v = 0;
+      if (history.length >= 2) {
+        const a = history[0],
+          b = history[history.length - 1];
+        const dt = (b.t - a.t) / 1000;
+        if (dt > 0) v = (b.x - a.x) / dt;
+      }
+      // Project where the flick is headed, then land on the nearest reel and
+      // spring there carrying the release velocity (Apple momentum handoff).
+      const decel = 0.995;
+      const projected = pos + (v / 1000) * (decel / (1 - decel));
+      animateTo(nearestIndex(projected), v);
+    }
+
+    if (!reduce) {
+      viewport.addEventListener("pointerdown", onDown);
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    }
+    // A real drag must not also fire the link/click beneath it.
+    track.addEventListener(
+      "click",
+      (e) => {
+        if (moved) {
+          e.preventDefault();
+          e.stopPropagation();
+          moved = false;
+        }
+      },
+      true,
+    );
+
+    // Remember which reel the visitor opens so returning from its detail page
+    // re-highlights it (keyed off the slide's original data-index, restored
+    // once). A deliberate fresh visit to /videos still starts at the first.
     const RESTORE_KEY = "videoCarouselOpenIndex";
     track.addEventListener("click", (e) => {
       const slide = (e.target as HTMLElement).closest<HTMLElement>(".slide");
@@ -97,7 +320,6 @@ const base = import.meta.env.BASE_URL;
         } catch {}
       }
     });
-
     function restoreActive() {
       let saved: string | null = null;
       try {
@@ -105,79 +327,12 @@ const base = import.meta.env.BASE_URL;
         sessionStorage.removeItem(RESTORE_KEY);
       } catch {}
       if (saved == null) return;
-      const slides = visibleSlides();
-      const idx = slides.findIndex((s) => s.dataset.index === saved);
+      const idx = visibleSlides().findIndex((s) => s.dataset.index === saved);
       if (idx >= 0) active = idx;
     }
 
-    // Translate the track so the active slide's centre meets the viewport's
-    // centre. offsetLeft is measured inside the track (position: relative) and
-    // is unaffected by the transform, so this stays correct on every call.
-    function center() {
-      const slides = visibleSlides();
-      if (!slides.length) return;
-      active = Math.max(0, Math.min(active, slides.length - 1));
-      const el = slides[active];
-      const offset =
-        viewport.clientWidth / 2 - (el.offsetLeft + el.offsetWidth / 2);
-      track.style.transform = `translate3d(${offset}px, 0, 0)`;
-    }
-
-    function render() {
-      const slides = visibleSlides();
-      if (!slides.length) return;
-      active = Math.max(0, Math.min(active, slides.length - 1));
-      slides.forEach((s, i) => {
-        s.classList.toggle("is-active", i === active);
-        // distance from active controls scale/opacity via a CSS var
-        s.style.setProperty("--dist", String(Math.abs(i - active)));
-        s.setAttribute("aria-current", i === active ? "true" : "false");
-        s.tabIndex = i === active ? 0 : -1;
-      });
-      center();
-    }
-
-    function go(delta: number) {
-      const slides = visibleSlides();
-      if (!slides.length) return;
-      active = (active + delta + slides.length) % slides.length;
-      render();
-    }
-
-    prev.addEventListener("click", () => go(-1));
-    next.addEventListener("click", () => go(1));
-
-    root.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        go(-1);
-      }
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        go(1);
-      }
-    });
-
-    // Touch swipe.
-    let startX = 0;
-    track.addEventListener(
-      "touchstart",
-      (e) => (startX = e.touches[0].clientX),
-      { passive: true },
-    );
-    track.addEventListener(
-      "touchend",
-      (e) => {
-        const dx = e.changedTouches[0].clientX - startX;
-        if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
-      },
-      { passive: true },
-    );
-
     // Re-centre when the FILTER changes which slides are visible. We compare the
-    // visible set first, so our own per-render style writes (the `--dist` var)
-    // don't retrigger this and reset the selection — that feedback loop is what
-    // made the arrows appear dead (every click snapped straight back to 0).
+    // visible set first so our own per-frame --dist writes don't retrigger it.
     const visibleKey = () =>
       visibleSlides()
         .map((s) => s.dataset.index)
@@ -187,28 +342,23 @@ const base = import.meta.env.BASE_URL;
       const key = visibleKey();
       if (key === lastVisibleKey) return;
       lastVisibleKey = key;
-      active = 0;
-      render();
+      snapTo(0);
     });
-    track.querySelectorAll(".slide").forEach((s) =>
+    track.querySelectorAll<HTMLElement>(".slide").forEach((s) =>
       observer.observe(s, { attributes: true, attributeFilter: ["style"] }),
     );
+
     let rt: number | undefined;
     window.addEventListener("resize", () => {
       window.clearTimeout(rt);
-      rt = window.setTimeout(center, 120);
+      rt = window.setTimeout(() => snapTo(active), 120);
     });
 
-    // Land on the previously-opened reel (if we're coming back) without an
-    // animated sweep across the strip — jump straight there, then re-enable the
-    // transition for subsequent arrow/swipe moves.
+    // First paint: land on the reel we came back to (if any), then settle again
+    // once fonts/images have finalised the widths.
     restoreActive();
-    track.style.transition = "none";
-    render();
-    void track.offsetWidth; // force the jump to apply before restoring easing
-    track.style.transition = "";
-    // One more pass after fonts/images settle so widths are final.
-    window.setTimeout(center, 300);
+    snapTo(active);
+    window.setTimeout(() => snapTo(active), 300);
   }
   setupCarousel();
   document.addEventListener("astro:after-swap", setupCarousel);
@@ -227,6 +377,12 @@ const base = import.meta.env.BASE_URL;
     overflow: hidden;
     /* room so the enlarged active phone isn't clipped top/bottom */
     padding-block: var(--space-6);
+    /* Horizontal drags are ours; vertical scrolling still belongs to the page. */
+    touch-action: pan-y;
+    cursor: grab;
+  }
+  .carousel.is-dragging .viewport {
+    cursor: grabbing;
   }
   .track {
     position: relative;
@@ -234,9 +390,8 @@ const base = import.meta.env.BASE_URL;
     align-items: center;
     gap: var(--space-8);
     width: max-content;
-    /* No margin:auto here — the JS transform handles all centring. A margin
-       would offset offsetLeft and fight the translate, breaking the arrows. */
-    transition: transform 0.5s var(--ease-out);
+    /* The JS spring owns the transform — no CSS transition here, or it would
+       fight the per-frame updates and break the 1:1 drag. */
     will-change: transform;
   }
 
@@ -245,24 +400,19 @@ const base = import.meta.env.BASE_URL;
     width: clamp(170px, 22vw, 230px);
     text-align: center;
     cursor: pointer;
-    transition: transform var(--transition), opacity var(--transition);
-    /* phones further from centre shrink + dim */
-    transform: scale(calc(1 - var(--dist, 1) * 0.12));
-    opacity: calc(1 - var(--dist, 1) * 0.32);
+    /* --dist is a *continuous* distance-from-centre written every frame, so the
+       scale/dim glides smoothly while you drag. No transition (JS drives it). */
+    transform: scale(calc(1.06 - var(--dist, 1) * 0.14));
+    opacity: calc(1 - var(--dist, 1) * 0.34);
   }
   .slide.is-active {
-    transform: scale(1.08);
-    opacity: 1;
     cursor: default;
   }
   .slide :global(.phone) {
-    transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+    transition: transform 0.4s var(--spring), box-shadow 0.4s var(--ease-out);
   }
   .slide.is-active :global(.phone) {
     box-shadow: var(--glow);
-  }
-  .slide:not(.is-active):hover {
-    opacity: 0.85;
   }
   .slide:not(.is-active):hover :global(.phone) {
     transform: translateY(-6px);
@@ -273,14 +423,12 @@ const base = import.meta.env.BASE_URL;
   .slide-meta h3 {
     font-size: 1rem;
     font-weight: 600;
+    color: var(--text-muted);
     transition: color var(--transition);
   }
+  /* The focal reel's title steps up to the solid accent (gradient is rationed). */
   .slide.is-active .slide-meta h3 {
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    color: var(--accent-text);
   }
   .views {
     color: var(--text-muted);
@@ -297,14 +445,19 @@ const base = import.meta.env.BASE_URL;
     color: var(--text);
     display: grid;
     place-items: center;
-    transition: all var(--transition);
+    transition: background var(--transition), color var(--transition),
+      border-color var(--transition), transform var(--dur) var(--spring),
+      box-shadow var(--dur) var(--spring);
   }
   .arrow:hover {
-    background: var(--grad);
-    color: #fff;
+    background: var(--accent);
+    color: var(--accent-contrast);
     border-color: transparent;
-    transform: scale(1.06);
+    transform: scale(1.08);
     box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  .arrow:active {
+    transform: scale(0.95);
   }
 
   @media (max-width: 640px) {
@@ -317,8 +470,12 @@ const base = import.meta.env.BASE_URL;
     .viewport {
       width: 100%;
     }
+    /* Size each reel by HEIGHT first so the centred phone always fits the
+       screen (Instagram-style) rather than overflowing on tall 9:19 frames.
+       We take the smaller of 74% width and the width that keeps the frame at
+       ~60% of the viewport height. */
     .slide {
-      width: 74vw;
+      width: min(74vw, calc(60vh * 9 / 19));
     }
     .arrow {
       position: absolute;
@@ -339,6 +496,9 @@ const base = import.meta.env.BASE_URL;
     }
     .arrow:hover {
       transform: translateY(-50%) scale(1.06);
+    }
+    .arrow:active {
+      transform: translateY(-50%) scale(0.95);
     }
   }
 
