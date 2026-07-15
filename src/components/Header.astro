@@ -82,26 +82,56 @@ const other = otherLang(lang).toUpperCase();
       } catch (e) {}
     });
   }
-  bindThemeToggle();
-  document.addEventListener("astro:after-swap", bindThemeToggle);
+
+  // Scroll-edge effect: the header only grows a hairline + soft shadow once the
+  // page has scrolled beneath it (Apple-style), rather than showing a hard
+  // divider all the time. A 1px sentinel at the very top of the page is watched
+  // with IntersectionObserver, so there's no per-frame scroll listener.
+  function bindHeaderScroll() {
+    const header = document.querySelector(".site-header");
+    const sentinel = document.querySelector(".scroll-sentinel");
+    if (!header || !sentinel || (header as HTMLElement).dataset.scrollBound) return;
+    (header as HTMLElement).dataset.scrollBound = "true";
+    if (!("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(
+      ([e]) => header.classList.toggle("is-scrolled", !e.isIntersecting),
+      { threshold: 0 }
+    );
+    io.observe(sentinel);
+  }
+
+  function initHeader() {
+    bindThemeToggle();
+    bindHeaderScroll();
+  }
+  initHeader();
+  document.addEventListener("astro:after-swap", initHeader);
 </script>
 
 <style>
+  /* A floating glass "island" pill, detached from the top edge. */
   .site-header {
     position: sticky;
-    top: 0;
+    top: var(--space-4);
     z-index: 50;
+    margin: var(--space-4) auto 0;
+    width: min(var(--maxw), calc(100% - var(--space-8)));
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-4) var(--space-6);
-    backdrop-filter: blur(10px);
-    background: color-mix(in srgb, var(--bg) 78%, transparent);
-    border-bottom: 1px solid transparent;
-    transition: border-color var(--transition), background var(--transition);
+    padding: 0.5rem 0.6rem 0.5rem 1.3rem;
+    border-radius: 999px;
+    border: 1px solid var(--mat-border);
+    background: var(--mat-bg);
+    -webkit-backdrop-filter: var(--mat-blur);
+    backdrop-filter: var(--mat-blur);
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--dur) var(--ease-fluid), transform var(--dur) var(--ease-fluid);
   }
-  .site-header:hover {
-    border-bottom-color: var(--line);
+  /* Once the page scrolls beneath it, the island lifts a little higher. */
+  .site-header.is-scrolled {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
   }
 
   .logo {
@@ -127,21 +157,14 @@ const other = otherLang(lang).toUpperCase();
     gap: var(--space-3);
   }
 
-  .tool {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--bg-elev);
-    color: var(--text);
-    transition: transform var(--transition), border-color var(--transition),
-      color var(--transition);
+  /* Base `.tool` chip styling now lives in global.css (Astro scopes component
+     styles, so it must be global to reach the MenuTrigger + menu close too). */
+  /* The sun/moon icon spins a touch as the theme flips. */
+  .theme-toggle svg {
+    transition: transform var(--dur) var(--spring);
   }
-  .tool:hover {
-    transform: translateY(-1px);
-    border-color: var(--accent);
+  .theme-toggle:hover svg {
+    transform: rotate(18deg);
   }
 
   .lang-toggle {
@@ -152,7 +175,7 @@ const other = otherLang(lang).toUpperCase();
     font-weight: 600;
   }
   .lang-current {
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .lang-sep,
   .lang-other {

@@ -57,7 +57,7 @@ const base = import.meta.env.BASE_URL;
     display: none;
   }
   .back-eyebrow:hover {
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .article-head {
     margin-bottom: var(--space-12);
@@ -75,7 +75,7 @@ const base = import.meta.env.BASE_URL;
     background: color-mix(in srgb, var(--accent) 12%, transparent);
     border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
     font-weight: 600;
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .date {
     color: var(--text-muted);
@@ -119,12 +119,12 @@ const base = import.meta.env.BASE_URL;
     margin-block: var(--space-6);
   }
   .prose :global(a) {
-    color: var(--accent);
+    color: var(--accent-text);
     border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
     transition: border-color var(--transition);
   }
   .prose :global(a:hover) {
-    border-bottom-color: var(--accent);
+    border-bottom-color: var(--accent-text);
   }
   .prose :global(ul),
   .prose :global(ol) {

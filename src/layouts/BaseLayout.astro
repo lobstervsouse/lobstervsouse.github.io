@@ -5,7 +5,6 @@ import ThemeScript from "../components/ThemeScript.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import MenuOverlay from "../components/MenuOverlay.astro";
-import { t } from "../data/ui";
 import { site, profile } from "../data/site";
 import type { Lang } from "../data/site";
 import { switchLangPath } from "../i18n/utils";
@@ -18,7 +17,6 @@ interface Props {
   bare?: boolean;
 }
 const { lang, title, description, bare = false } = Astro.props;
-const strings = t(lang);
 const fullTitle = title ? `${title} · ${site.name}` : site.name;
 const desc =
   description ??
@@ -105,12 +103,13 @@ const jsonLd = {
     <!-- Structured data (Person + WebSite) -->
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-    <!-- Fonts: Fraunces (editorial display serif) + Inter (grotesk body),
-         loaded fast with preconnect. -->
+    <!-- Fonts: Newsreader (editorial display serif with real italics + optical
+         sizing) + Hanken Grotesk (warm grotesk body), loaded fast with
+         preconnect and swap so text paints immediately. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -118,7 +117,9 @@ const jsonLd = {
     <ViewTransitions />
   </head>
   <body>
-    <a class="skip-link" href="#main">{strings.skipToContent}</a>
+    <!-- A 1px marker at the very top of the page. The header watches it with an
+         IntersectionObserver to know when you've scrolled (no scroll listener). -->
+    <span class="scroll-sentinel" aria-hidden="true"></span>
     {!bare && <Header lang={lang} />}
     <main id="main">
       <slot />
